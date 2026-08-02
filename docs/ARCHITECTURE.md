@@ -1,4 +1,4 @@
-# 🌼 Aster System Architecture Documentation (Version 0.1)
+# 🌼 Aster System Architecture Documentation (Versions 0.1 → 0.2)
 
 Welcome to the Aster developer documentation! This document provides a comprehensive technical overview of Aster's architecture, design decisions, component relationships, and extensibility guidelines for software engineers working on the project.
 
@@ -441,7 +441,8 @@ Reflecting on the successful implementation of Version 0.1:
 1. **Folder-Based Pages Decision:** Using `ui/pages/<domain>/page.py` proved to be an excellent early choice. It already provides a clean boundary for upcoming domain widgets without polluting `ui/`.
 2. **QSS Theme Performance:** Qt QSS stylesheets render cleanly with minimal overhead. The dark theme palette provides high contrast and a modern aesthetic out of the box.
 3. **Future Enhancement Recommendation:** As domain services are added in Version 0.2, introducing a lightweight Dependency Injection / Service Locator container will make passing database and service references to page controllers completely seamless.
- ## Non-Goals
+
+### Non-Goals (Version 0.1)
 
 The following are intentionally out of scope for Version 0.1:
 
@@ -451,3 +452,404 @@ The following are intentionally out of scope for Version 0.1:
 - Machine learning
 - Cloud synchronization
 - User authentication
+
+---
+
+---
+
+# ═══════════════════════════════════════════════════════════
+# VERSION 0.2 – PRODUCTIVITY MODULE
+# ═══════════════════════════════════════════════════════════
+
+## V0.2-1. Overview
+
+Version 0.2 transforms Aster from a pure UI skeleton into a **fully functional, data-driven productivity dashboard**. This version delivers four interactive daily productivity features — Tasks, Daily Goals, Notes, and a Pomodoro Focus Timer — all backed by a local SQLite database.
+
+The driving principle behind this version was: **before building any UI, build the data layer correctly**. A solid database foundation makes every feature above it simple and reliable.
+
+---
+
+## V0.2-2. What Was Built (Complete File Inventory)
+
+### Database Layer (`database/`)
+
+| File | Role |
+|---|---|
+| [database/schema.sql](file:///d:/Aster/database/schema.sql) | SQL DDL defining all 4 productivity tables |
+| [database/models.py](file:///d:/Aster/database/models.py) | Python dataclass models for all 4 entities |
+| [database/connection.py](file:///d:/Aster/database/connection.py) | SQLite connection manager with WAL, FK enforcement, and shared-connection mode |
+| [database/repositories/productivity_repository.py](file:///d:/Aster/database/repositories/productivity_repository.py) | Full CRUD repository for Tasks, Goals, Notes, and Pomodoro Sessions |
+
+### Services Layer (`services/`)
+
+| File | Role |
+|---|---|
+| [services/productivity/pomodoro_service.py](file:///d:/Aster/services/productivity/pomodoro_service.py) | QTimer-backed Pomodoro state machine (Work / Short Break / Long Break) |
+
+### UI Layer (`ui/`)
+
+| File | Role |
+|---|---|
+| [ui/pages/productivity/page.py](file:///d:/Aster/ui/pages/productivity/page.py) | Top-level ProductivityPage — pill navigation + sub-view stacking |
+| [ui/pages/productivity/tasks_widget.py](file:///d:/Aster/ui/pages/productivity/tasks_widget.py) | Tasks (To-Do) list view with filter tabs, priority dots, and completion toggles |
+| [ui/pages/productivity/goals_widget.py](file:///d:/Aster/ui/pages/productivity/goals_widget.py) | Daily goals habit checklist with streak counters and progress bar |
+| [ui/pages/productivity/notes_widget.py](file:///d:/Aster/ui/pages/productivity/notes_widget.py) | Split-pane Notes view with search, list, and text editor |
+| [ui/pages/productivity/pomodoro_widget.py](file:///d:/Aster/ui/pages/productivity/pomodoro_widget.py) | Pomodoro timer display — countdown, mode selector, session history log |
+| [ui/dialogs/task_dialog.py](file:///d:/Aster/ui/dialogs/task_dialog.py) | Modal form dialog for creating new tasks |
+| [ui/dialogs/goal_dialog.py](file:///d:/Aster/ui/dialogs/goal_dialog.py) | Modal form dialog for creating new daily goals |
+
+### Styling (`assets/`)
+
+| File | Change |
+|---|---|
+| [assets/themes/dark.qss](file:///d:/Aster/assets/themes/dark.qss) | Added ~120 lines of Version 0.2 QSS rules for all new components |
+
+### Tests (`tests/`)
+
+| File | Role |
+|---|---|
+| [tests/test_database.py](file:///d:/Aster/tests/test_database.py) | 6 unit tests covering schema creation, FK enforcement, and CRUD for all 4 entities |
+
+---
+
+## V0.2-3. Database Layer — File-by-File Breakdown
+
+### `database/schema.sql`
+
+This file defines the **ground truth** for Aster's data model.
+
+**Tables defined:**
+
+```sql
+tasks           -- id, title, description, priority, category, due_date, is_completed, created_at
+daily_goals     -- id, title, category, is_completed, reset_daily, streak_count, last_completed_at
+notes           -- id, title, content, category, created_at, updated_at
+pomodoro_sessions -- id, duration_minutes, session_type, completed_at
+```
+
+**Design Decisions:**
+
+- **`CHECK` constraints** on `priority` and `session_type` enforce valid values at the database level — not just in Python. This prevents silent data corruption even if business logic has a bug.
+- **`is_completed` stored as `INTEGER (0/1)`** rather than `BOOLEAN` because SQLite does not have a native boolean type. Using `0/1` integers is the idiomatic SQLite approach.
+- **`datetime('now', 'localtime')`** used for all timestamps to match the user's local timezone automatically in SQLite without needing Python-side timezone handling.
+- **`reset_daily INTEGER`** in `daily_goals` allows habits to be optionally permanent (non-resetting), giving flexibility for both daily habits and one-time goals.
+
+---
+
+### `database/models.py`
+
+Defines Python `@dataclass` classes that mirror each database table as clean in-memory value objects.
+
+**Why `@dataclass` over plain dicts?**
+
+| `@dataclass` | Plain `dict` |
+|---|---|
+| Type-annotated fields (IDE autocomplete works) | No type safety |
+| `None` defaults for optional fields | KeyError risks |
+| Readable `repr()` for debugging | Raw dict output |
+| Immutable swap-in when needed via `frozen=True` | No option |
+
+All IDs are `Optional[int] = None` so a model can exist before database insertion and have its `id` filled in after `INSERT`.
+
+---
+
+### `database/connection.py`
+
+The `DatabaseConnection` class is the **single gateway** between the application and the SQLite file.
+
+**Key implementation decisions:**
+
+1. **Shared connection for `:memory:` mode:** When `db_path=":memory:"` is passed (used exclusively in tests), a single persistent `sqlite3.Connection` object is kept alive for the object's lifetime. This is critical because SQLite in-memory databases are destroyed the moment their connection is closed — a fresh `connect(":memory:")` call creates a brand new empty database. The shared connection ensures tests see the same schema and data across all cursor operations.
+
+2. **WAL journal mode** (`PRAGMA journal_mode = WAL`): Write-Ahead Logging mode dramatically improves concurrent read performance and prevents database lock errors when multiple parts of the application read data simultaneously. Only applied for file-based databases (not `:memory:`).
+
+3. **Foreign key enforcement** (`PRAGMA foreign_keys = ON`): SQLite disables FK constraints by default for backward compatibility. We enable them explicitly on every connection to catch relational integrity violations at runtime.
+
+4. **Context manager `get_cursor()`:** The `@contextmanager` pattern guarantees `conn.commit()` on success and `conn.rollback()` on any exception — preventing partial writes from corrupting data. The connection is closed after each operation (for file-based DBs) to avoid long-lived connection leaks.
+
+---
+
+### `database/repositories/productivity_repository.py`
+
+The `ProductivityRepository` class is the **only place** SQL queries are written in the entire application. No widget, page, or service module contains SQL strings.
+
+**Why the Repository Pattern?**
+
+- **Single point of change:** Switching from SQLite to a different database (e.g., PostgreSQL) in the future only requires rewriting this one file.
+- **Testability:** Tests can inject a test database connection and exercise the repository against an isolated `:memory:` database without spinning up the full application.
+- **Readability:** Widgets call `self._repo.add_task(task)` — a clean domain-language method — rather than constructing SQL inside a button click handler.
+
+**Notable implementation detail — `toggle_task_completion`:**
+```sql
+UPDATE tasks SET is_completed = CASE WHEN is_completed = 1 THEN 0 ELSE 1 END WHERE id = ?
+```
+This is a **single atomic SQL statement** that reads and flips the boolean in one round-trip, avoiding a read-then-write race condition that would exist if done in two separate queries from Python.
+
+**Notable implementation detail — `toggle_goal_completion` with streak:**
+```sql
+UPDATE daily_goals
+SET is_completed = CASE WHEN is_completed = 1 THEN 0 ELSE 1 END,
+    streak_count = CASE WHEN is_completed = 0 THEN streak_count + 1 ELSE max(0, streak_count - 1) END,
+    last_completed_at = CASE WHEN is_completed = 0 THEN datetime('now','localtime') ELSE last_completed_at END
+WHERE id = ?
+```
+All three columns are updated atomically in a single statement. The `max(0, streak_count - 1)` prevents streak from going negative if unchecked erroneously.
+
+---
+
+## V0.2-4. Services Layer — Pomodoro Service
+
+### `services/productivity/pomodoro_service.py`
+
+`PomodoroService` is a **Qt state machine** that drives the Pomodoro timer cycle using `QTimer`.
+
+#### State Diagram
+
+```mermaid
+stateDiagram-v2
+    [*] --> IDLE
+    IDLE --> WORK : start()
+    WORK --> SHORT_BREAK : 4 sessions not reached
+    WORK --> LONG_BREAK : every 4th session
+    SHORT_BREAK --> WORK : session ends / skip()
+    LONG_BREAK --> WORK : session ends / skip()
+    WORK --> WORK : reset()
+    WORK --> IDLE : stop()
+```
+
+#### Key Design Decisions
+
+**1. `PomodoroService` extends `QObject`, not `QWidget`.**
+
+Services must never import or depend on UI widgets. By extending `QObject`, the service gets access to Qt's Signal/Slot system without any coupling to the visual layer. The UI (`PomodoroWidget`) connects to the service's signals and reacts to them. The service never knows the UI exists.
+
+**2. Signals instead of direct method calls for UI updates.**
+
+| Signal | Purpose |
+|---|---|
+| `tick(int)` | Emitted every second with remaining seconds. Widget updates countdown display. |
+| `state_changed(str)` | Emitted on Work/Break transitions. Widget updates state label and button text. |
+| `session_completed(str, int)` | Emitted when a session finishes. Widget refreshes the session log. |
+
+This decoupling means the Pomodoro service could later be connected to a notification system, a database logger, or an analytics pipeline with zero changes to the service itself.
+
+**3. Database logging is wrapped in `try/except`.**
+
+```python
+def _log_session(self, ...):
+    try:
+        ...
+        self._repo.log_pomodoro_session(session)
+    except Exception:
+        pass  # Never crash the timer due to a logging failure
+```
+
+A database write error must never crash or freeze the UI timer. Users would lose their focus session tracking which is acceptable, but losing timer functionality is not. The silent catch is intentional and documented.
+
+**4. Long break after every 4th work session.**
+
+The classic Pomodoro Technique prescribes a long break after 4 focus sessions. This is encoded via `WORK_SESSIONS_BEFORE_LONG_BREAK = 4` and `self._work_sessions_completed % 4 == 0`.
+
+---
+
+## V0.2-5. UI Layer — Productivity Page Architecture
+
+### `ui/pages/productivity/page.py` — The Orchestrator
+
+`ProductivityPage` acts as the **orchestrator** for the entire productivity domain. It:
+1. Creates a single `DatabaseConnection` and `ProductivityRepository` instance, shared across all sub-views.
+2. Renders a pill-style sub-navigation bar using `QButtonGroup` + `QStackedWidget`.
+3. Handles dialog lifecycles (opening `TaskDialog`, `GoalDialog`) and writes results back to the repository before triggering sub-view refreshes.
+
+**Why a single shared `DatabaseConnection`?**
+
+All sub-views (Tasks, Goals, Notes, Pomodoro) operate on the same `aster.db` file. Creating separate `DatabaseConnection` instances per widget would result in multiple file handles, defeating WAL optimization and potentially causing lock contention. One connection per page is clean, simple, and correct.
+
+**Why `QButtonGroup` for pill tabs?**
+
+`QButtonGroup` with `setExclusive(True)` provides free mutual exclusion — when one tab button is checked, the others are automatically unchecked. This mirrors the same pattern used for sidebar navigation in `SidebarWidget`.
+
+---
+
+### Sub-View Widgets
+
+Each sub-view is a **self-contained `QWidget`** that receives the shared `ProductivityRepository` and owns its own layout, state, and refresh logic.
+
+#### `tasks_widget.py` — TasksWidget
+
+- Maintains a `_filter` string (`"All"` / `"Active"` / `"Completed"`) to filter the displayed task list.
+- On every state change (toggle, delete, add), calls `self.refresh()` which clears and rebuilds the list from the database. This is a **read-from-database refresh** strategy rather than local state mutation, ensuring the UI always reflects the true database state.
+- `TaskItemWidget` is a nested `QFrame` that renders a single task row with its priority dot, completion checkbox, title, due date, and delete button.
+
+**Why rebuild the list on every change vs. mutating list items in place?**
+
+For the number of tasks a user would realistically have (<500), rebuilding from the database on every change is fast (<5ms) and guarantees correctness. Locally mutating widget state would require careful sync logic and risks the UI and database falling out of sync.
+
+#### `goals_widget.py` — GoalsWidget
+
+Follows the identical refresh pattern as `TasksWidget`. Additionally:
+- Renders a `QProgressBar` updated with `completed / total` after every toggle.
+- Each goal shows a `🔥 N` streak counter pulled from the `streak_count` field.
+
+#### `notes_widget.py` — NotesWidget
+
+Notes is the most complex sub-view because it has **two panes** (list + editor) that must stay synchronized.
+
+A `QSplitter(Qt.Horizontal)` divides the panel into:
+- **Left:** `QListWidget` of note titles, updated by `refresh()`.
+- **Right:** `QLineEdit` (title) + `QTextEdit` (body) + Save/Delete buttons.
+
+When a note is selected in the list, `_on_note_selected()` loads its content into the editor. When saved, it writes back to the database via `update_note()` or `add_note()`. The `_selected_note` instance variable tracks which note is currently open.
+
+**Why `QSplitter` instead of a fixed layout?**
+
+`QSplitter` allows the user to drag the divider to resize both panels freely. This is a standard desktop UX pattern for note apps (similar to Obsidian, Notion, Evernote panels) that costs nothing to implement in Qt.
+
+#### `pomodoro_widget.py` — PomodoroWidget
+
+`PomodoroWidget` is a **pure observer** of `PomodoroService`. It:
+- Instantiates `PomodoroService(repo=repo)` and connects to its three signals.
+- Displays a large countdown `QLabel` updated every second by the `tick` signal.
+- Manages Play/Pause/Skip/Reset button states in `_refresh_buttons()`, called whenever service state changes.
+- Maintains a scrollable session log by calling `_refresh_log()` after each completed session.
+
+---
+
+### `ui/dialogs/` — Modal Form Dialogs
+
+#### `task_dialog.py` — TaskDialog
+
+A `QDialog` with a `QFormLayout` collecting: title, description, priority (dropdown), category, and due date. The `get_task()` method returns a `Task` dataclass or `None` if the title is empty, making validation dead simple for the caller:
+
+```python
+task = dialog.get_task()
+if task:
+    self._repo.add_task(task)
+```
+
+#### `goal_dialog.py` — GoalDialog
+
+Similar pattern for `DailyGoal` — collects title, category, and a `reset_daily` checkbox.
+
+**Why `QDialog` instead of an inline form?**
+
+Modal dialogs keep the main page clean and prevent users from accidentally editing form fields while still viewing the list. They are the standard Qt pattern for create/edit flows.
+
+---
+
+## V0.2-6. Design Decisions — Version 0.2
+
+### 1. Repository Pattern for Database Access
+
+- **Why Chosen:** Isolates all SQL inside `ProductivityRepository`. No SQL strings anywhere in the `ui/` or `services/` layers.
+- **Advantages:** Testable via dependency injection, swappable storage backend, readable domain-language API.
+- **Alternatives Considered:**
+  - *Direct SQLite calls inside widgets:* Rejected — violates separation of concerns and makes testing impossible without a full Qt application running.
+  - *SQLAlchemy ORM:* Rejected — introduces a significant external dependency and abstraction overhead that is unnecessary for Aster's scale. Standard `sqlite3` is part of the Python standard library and needs no installation.
+
+### 2. `@dataclass` Models Instead of ORM Mapped Objects
+
+- **Why Chosen:** Dataclasses are plain Python objects with no framework magic. They serialize trivially, have IDE autocomplete, and have zero runtime overhead.
+- **Alternatives Considered:**
+  - *SQLAlchemy mapped classes:* Rejected for the same reasons as above.
+  - *Plain dictionaries:* Rejected because `task["tittle"]` silently returns `KeyError` while `task.title` provides IDE completion and an obvious error.
+
+### 3. Sub-View `QStackedWidget` Inside `ProductivityPage`
+
+- **Why Chosen:** Exactly the same rationale as the top-level `QStackedWidget` in `MainWindow` — zero-flicker switching, preserved widget state, and each sub-view is independently testable.
+- **Advantages:** Switching from Tasks to Pomodoro and back preserves the Pomodoro timer state (it keeps running) and the Tasks filter selection.
+
+### 4. `QObject`-based `PomodoroService` (Not a `QWidget`)
+
+- **Why Chosen:** Services must never import UI classes. Making `PomodoroService` a `QObject` gives it Signal/Slot capability without any dependency on `QWidget`, `QMainWindow`, or any display component.
+- **Advantages:** The Pomodoro timer could be tested entirely without a display, connected to a CLI output, or used in a background daemon with no changes.
+
+### 5. Rebuild-from-Database Refresh Strategy (No Local State Caching)
+
+- **Why Chosen:** Calling `repo.get_all_tasks()` and rebuilding the widget list on every change is simple and always correct.
+- **Advantages:** No risk of UI/database state drift. No complex cache invalidation logic.
+- **When This Should Change:** If a user has thousands of tasks, a smarter incremental update strategy (only re-rendering changed rows) would be needed. For Version 0.2's scope, this is not a concern.
+
+### 6. Silent Exception Handling in `PomodoroService._log_session`
+
+- **Why Chosen:** The timer is user-facing and real-time. A database write failure must never interrupt the visual countdown.
+- **Trade-off:** A logging failure is silently swallowed. A future enhancement could emit a `Signal` to display a non-intrusive toast notification when logging fails.
+
+---
+
+## V0.2-7. Updated Component Relationship Diagram
+
+```mermaid
+graph TD
+    subgraph Entry ["Application Bootstrap"]
+        MAIN["main.py"]
+        QSS["assets/themes/dark.qss"]
+    end
+
+    subgraph UILayer ["UI Layer"]
+        MW["MainWindow"]
+        SB["SidebarWidget"]
+        STACK_MAIN["QStackedWidget (top-level)"]
+        PP["ProductivityPage"]
+        STACK_PROD["QStackedWidget (productivity)"]
+        TW["TasksWidget"]
+        GW["GoalsWidget"]
+        NW["NotesWidget"]
+        PW["PomodoroWidget"]
+        TD["TaskDialog"]
+        GD["GoalDialog"]
+    end
+
+    subgraph ServicesLayer ["Services Layer"]
+        POMO["PomodoroService (QObject)"]
+    end
+
+    subgraph DataLayer ["Data Layer"]
+        CONN["DatabaseConnection"]
+        REPO["ProductivityRepository"]
+        DB["aster.db (SQLite)"]
+        SCHEMA["schema.sql"]
+        MODELS["dataclass Models"]
+    end
+
+    MAIN -->|loads| QSS
+    MAIN -->|creates| MW
+    MW -->|contains| SB
+    MW -->|contains| STACK_MAIN
+    STACK_MAIN -->|contains| PP
+    PP -->|pill nav + | STACK_PROD
+    STACK_PROD --> TW & GW & NW & PW
+    PP -->|opens| TD & GD
+    PP -->|creates| CONN
+    CONN -->|reads| SCHEMA
+    CONN -->|connects to| DB
+    PP -->|creates| REPO
+    REPO -->|uses| CONN
+    REPO -->|returns| MODELS
+    TW & GW & NW --> REPO
+    PW -->|owns| POMO
+    POMO -->|calls| REPO
+    POMO -->|emits tick/state/session signals| PW
+```
+
+---
+
+## V0.2-8. Current Limitations (Version 0.2)
+
+- **No Daily Reset Logic:** Goals marked with `reset_daily = True` are designed to reset at midnight, but the automatic daily reset mechanism (checking `last_completed_at` date on startup) is not yet implemented. This is a known gap for Version 0.3+.
+- **No Task Editing:** Tasks can be created, completed, and deleted. An "Edit" flow (pre-populated `TaskDialog`) is not yet implemented.
+- **No Note Categories as Filters:** Notes have a `category` field stored in SQLite but no UI filter for browsing by category.
+- **No Pomodoro Settings:** Session durations are hardcoded constants. User-configurable durations are planned for the Settings page in a later version.
+- **Single Repository Instance:** `ProductivityRepository` is instantiated once per `ProductivityPage`. Across-domain data queries (e.g., the Analytics page aggregating productivity + fitness data) will require a shared application-level repository registry in a future version.
+
+---
+
+## V0.2-9. Post-Implementation Reflections
+
+1. **Shared Connection Design Was Correct:** Passing a single `DatabaseConnection` to the repository and sharing it across all sub-views eliminated all connection management complexity.
+
+2. **The Repository Pattern Paid Off Immediately:** Writing `tests/test_database.py` was trivial — we simply instantiated `DatabaseConnection(":memory:")`, passed it to the repository, and ran full CRUD tests without touching the file system or the UI.
+
+3. **Signal/Slot for Pomodoro Was the Right Call:** The timer state remained completely isolated from the UI during the entire implementation. `PomodoroWidget` simply reacts to signals — it never calls internal timer state methods directly.
+
+4. **What I Would Do Differently:** The `refresh()` rebuild strategy in `TasksWidget` and `GoalsWidget` involves clearing and recreating all `QFrame` widgets on every change. For small lists this is fine. As an early refactoring opportunity, a `QAbstractListModel` + `QListView` Model/View architecture would scale better and is the canonical Qt approach for large dynamic lists.
