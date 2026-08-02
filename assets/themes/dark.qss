@@ -1,0 +1,144 @@
+/* 🌼 Aster Sleek Dark Theme (QSS) */
+
+QMainWindow, QDialog {
+    background-color: #121214;
+    color: #F3F4F6;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+}
+
+QWidget {
+    color: #F3F4F6;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    font-size: 14px;
+}
+
+/* --- Sidebar Styling --- */
+#SidebarWidget {
+    background-color: #1A1A1E;
+    border-right: 1px solid #292932;
+}
+
+#SidebarLogo {
+    font-size: 20px;
+    font-weight: 700;
+    color: #FFFFFF;
+    padding: 16px 12px 20px 12px;
+}
+
+#SidebarLogoSpan {
+    color: #A78BFA;
+}
+
+QPushButton.nav-btn {
+    background-color: transparent;
+    color: #9CA3AF;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+QPushButton.nav-btn:hover {
+    background-color: #26262E;
+    color: #F3F4F6;
+}
+
+QPushButton.nav-btn:checked, QPushButton.nav-btn.active {
+    background-color: #2E2544;
+    color: #C4B5FD;
+    font-weight: 600;
+    border-left: 3px solid #8B5CF6;
+}
+
+/* --- Main Content Area & Pages --- */
+#ContentArea {
+    background-color: #121214;
+}
+
+.page-container {
+    background-color: #121214;
+    padding: 24px;
+}
+
+.page-header {
+    font-size: 24px;
+    font-weight: 700;
+    color: #F9FAFB;
+    margin-bottom: 4px;
+}
+
+.page-subtitle {
+    font-size: 14px;
+    color: #9CA3AF;
+    margin-bottom: 20px;
+}
+
+/* --- Card Widgets --- */
+.card {
+    background-color: #1E1E24;
+    border: 1px solid #2D2D38;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #E5E7EB;
+    margin-bottom: 8px;
+}
+
+.card-description {
+    font-size: 13px;
+    color: #9CA3AF;
+    line-height: 1.4;
+}
+
+.status-badge {
+    background-color: #2E2842;
+    color: #C4B5FD;
+    border: 1px solid #4C3D74;
+    border-radius: 12px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* --- Scrollbars --- */
+QScrollBar:vertical {
+    background: #121214;
+    width: 8px;
+    margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+    background: #2D2D38;
+    min-height: 20px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #4B4B5A;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+QScrollBar:horizontal {
+    background: #121214;
+    height: 8px;
+    margin: 0px;
+}
+
+QScrollBar::handle:horizontal {
+    background: #2D2D38;
+    min-width: 20px;
+    border-radius: 4px;
+}
+
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0px;
+}
