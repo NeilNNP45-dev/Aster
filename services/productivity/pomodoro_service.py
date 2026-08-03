@@ -123,14 +123,27 @@ class PomodoroService(QObject):
         if self._seconds_remaining > 0:
             self._seconds_remaining -= 1
             self.tick.emit(self._seconds_remaining)
-        else:
-            # Session naturally completed
-            self._timer.stop()
-            self._advance_state(log_session=True)
+            return
+
+        # Session naturally completed
+        self._timer.stop()
+        self._advance_state(log_session=True)
 
     def _advance_state(self, log_session: bool = True):
         """Log current session (if requested) and transition to the next state."""
         completed_state = self._state
+
+        # Determine next state first so the completed-session count is updated
+        # before any UI listeners react to the completion event.
+        if completed_state == PomodoroState.WORK:
+            self._work_sessions_completed += 1
+            if self._work_sessions_completed % WORK_SESSIONS_BEFORE_LONG_BREAK == 0:
+                next_state = PomodoroState.LONG_BREAK
+            else:
+                next_state = PomodoroState.SHORT_BREAK
+        else:
+            # After any break, go back to Work
+            next_state = PomodoroState.WORK
 
         if log_session and completed_state in (PomodoroState.WORK, PomodoroState.SHORT_BREAK, PomodoroState.LONG_BREAK):
             duration_minutes = SESSION_DURATIONS[completed_state] // 60
@@ -138,13 +151,6 @@ class PomodoroService(QObject):
             self._log_session(session_type, duration_minutes)
             self.session_completed.emit(session_type, duration_minutes)
 
-        # Determine next state
-        if completed_state == PomodoroState.WORK:
-            self._work_sessions_completed += 1
-            if self._work_sessions_completed % WORK_SESSIONS_BEFORE_LONG_BREAK == 0:
-                next_state = PomodoroState.LONG_BREAK
-            else:
-                next_state = PomodoroState.SHORT_BREAK
         else:
             # After any break, go back to Work
             next_state = PomodoroState.WORK

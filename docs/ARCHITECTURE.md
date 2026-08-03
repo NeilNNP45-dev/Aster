@@ -852,4 +852,89 @@ graph TD
 
 3. **Signal/Slot for Pomodoro Was the Right Call:** The timer state remained completely isolated from the UI during the entire implementation. `PomodoroWidget` simply reacts to signals — it never calls internal timer state methods directly.
 
-4. **What I Would Do Differently:** The `refresh()` rebuild strategy in `TasksWidget` and `GoalsWidget` involves clearing and recreating all `QFrame` widgets on every change. For small lists this is fine. As an early refactoring opportunity, a `QAbstractListModel` + `QListView` Model/View architecture would scale better and is the canonical Qt approach for large dynamic lists.
+4. **What I Would Do Differently:** The `refresh()` rebuild strategy in `TasksWidget` and `GoalsWidget` involves clearing and recreating all `QFrame` widgets on every change. For small lists this is fine. As an early refactoring opportunity, a `QAbstractListModel` + `QListView` Model/View architecture would scale better and is the canonical Qt approach for large dynamic lists.
+
+---
+
+# ═══════════════════════════════════════════════════════════
+# VERSION 0.3 – COLLEGE MODULE (IMPLEMENTATION NOTES)
+# ═══════════════════════════════════════════════════════════
+
+## V0.3-1. Overview
+
+Version 0.3 was intentionally scoped to deliver a first usable College experience rather than over-engineering a large feature set. The goal was to make it possible for a user to manage courses, timetable entries, attendance records, assignments, and exams from the app with local persistence and a visual style that matches the Productivity experience.
+
+## V0.3-2. Key Decisions and Why They Were Made
+
+### 1. Keep the College module aligned with the existing Productivity architecture
+
+- **Decision:** The College UI was implemented using the same page-and-widget pattern already used by the Productivity domain.
+- **Why:** This keeps the codebase consistent, reduces onboarding friction, and makes it easy for future contributors to navigate the app.
+- **Result:** The new College experience lives under [ui/pages/college/page.py](ui/pages/college/page.py) and its sub-widgets in [ui/pages/college](ui/pages/college).
+
+### 2. Separate UI, service, and repository responsibilities
+
+- **Decision:** The College features were split into UI widgets, a business logic service, and a repository layer.
+- **Why:** This keeps database logic out of the widgets and prevents the UI from becoming tightly coupled to SQLite details.
+- **Result:** The business rules now live in [services/college/college_service.py](services/college/college_service.py), while persistence is handled by [database/repositories/college_repository.py](database/repositories/college_repository.py).
+
+### 3. Use dataclasses and explicit domain models for College entities
+
+- **Decision:** New domain models such as courses, timetable entries, attendance logs, assignments, and exams were added to [database/models.py](database/models.py).
+- **Why:** Dataclasses provide a clear, type-safe way to represent data objects without introducing unnecessary framework complexity.
+- **Result:** The app now uses simple Python objects to move data between layers without mixing UI state and storage concerns.
+
+### 4. Add a dedicated SQLite schema for College data
+
+- **Decision:** The database schema was extended in [database/schema.sql](database/schema.sql) to cover all College-related tables and relationships.
+- **Why:** A proper relational schema ensures the app can store and later query academic records reliably.
+- **Result:** Courses can be created and referenced by timetable, attendance, assignments, and exams in a structured way.
+
+### 5. Use modal dialogs for create flows
+
+- **Decision:** The College module uses modal dialogs for creating entries instead of embedding full forms directly into the page.
+- **Why:** Modal forms keep the page layout clean and are a familiar Qt pattern for create/edit workflows.
+- **Result:** New forms were added in [ui/dialogs/course_dialog.py](ui/dialogs/course_dialog.py), [ui/dialogs/timetable_dialog.py](ui/dialogs/timetable_dialog.py), [ui/dialogs/attendance_dialog.py](ui/dialogs/attendance_dialog.py), [ui/dialogs/assignment_dialog.py](ui/dialogs/assignment_dialog.py), and [ui/dialogs/exam_dialog.py](ui/dialogs/exam_dialog.py).
+
+### 6. Style all form controls to match the dark theme
+
+- **Decision:** The shared theme sheet in [assets/themes/dark.qss](assets/themes/dark.qss) was extended so dropdowns, list selections, and form controls match the rest of the app.
+- **Why:** A visually consistent UI makes the College tab feel like a native part of Aster rather than a disconnected widget set.
+- **Result:** The remaining bright selection controls in the College dialogs were brought in line with the dark, polished appearance used throughout the app.
+
+### 7. Keep Version 0.3 intentionally focused
+
+- **Decision:** The first College milestone was designed for usable core flows, not full-scale academic management.
+- **Why:** Scope control is important in an early-stage desktop app. Shipping a focused version avoids overbuilding and makes later refinements easier.
+- **Result:** The current implementation supports creating and persisting core College entries while leaving deeper editing and polish improvements for later iterations.
+
+## V0.3-3. What Was Updated in the Code
+
+### Database Layer
+- Extended [database/models.py](database/models.py) with College domain models.
+- Extended [database/schema.sql](database/schema.sql) with College tables.
+- Added [database/repositories/college_repository.py](database/repositories/college_repository.py) for CRUD operations.
+
+### Services Layer
+- Added [services/college/college_service.py](services/college/college_service.py) for business logic and coordination.
+
+### UI Layer
+- Added the College page container in [ui/pages/college/page.py](ui/pages/college/page.py).
+- Added sub-views for courses, timetable, attendance, assignments, and exams under [ui/pages/college](ui/pages/college).
+- Wired these views to modal dialogs in [ui/dialogs](ui/dialogs).
+
+### Styling
+- Updated [assets/themes/dark.qss](assets/themes/dark.qss) to make the College form controls visually consistent.
+
+### Tests
+- Added [tests/test_college_service.py](tests/test_college_service.py) to verify the new College service behavior.
+
+## V0.3-4. Small Corrections Made During the Same Milestone
+
+One additional fix was made while integrating the College work:
+
+- The Pomodoro session counter bug in [services/productivity/pomodoro_service.py](services/productivity/pomodoro_service.py) was corrected by ensuring the completed-session count is updated before the completion signal is emitted. This preserved the intended behavior and prevented off-by-one counting during focus sessions.
+
+## V0.3-5. Current Direction
+
+The College module now provides a solid foundation for future expansion. The architecture remains intentionally simple and modular, so later improvements such as richer editing flows, better filtering, better attendance analytics, or cross-module summaries can be added without restructuring the app.
