@@ -1008,3 +1008,14 @@ The goal of v0.4 was to keep the feature set intentionally focused and aligned w
 - Add keyboard shortcuts for timer start/pause/stop.
 
 ---
+
+## V0.4-7final. Final Improvements After v0.4
+
+- Added visible GitHub repository input and clearer sync guidance in the Coding GitHub tab.
+- Expanded GitHub sync support to accept owner/repo identifiers, GitHub URLs, and `.git`/SSH repo forms.
+- Added GitHub PAT support for private repository metadata sync.
+- Improved GitHub sync feedback messages and auto-filled project repo fields when selecting a project.
+- Enhanced the Home dashboard with an overview card, quick start guidance, and a highlight section for new features.
+- Kept the Home page visually consistent with the app theme while making the landing experience more informative.
+
+---

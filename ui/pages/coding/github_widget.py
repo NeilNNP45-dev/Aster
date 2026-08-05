@@ -25,6 +25,11 @@ class GitHubWidget(QWidget):
         self._github_input.setProperty("class", "form-input")
         self._github_input.setPlaceholderText("owner/repo or GitHub URL")
         layout.addWidget(self._github_input)
+        self._hint = QLabel(
+            "Tip: leave blank to reuse the saved project repo, or enter a new GitHub URL/owner-repo.")
+        self._hint.setProperty("class", "card-description")
+        self._hint.setWordWrap(True)
+        layout.addWidget(self._hint)
         self._desc = QLabel("")
         self._desc.setWordWrap(True)
         self._desc.setProperty("class", "card-description")
@@ -45,6 +50,7 @@ class GitHubWidget(QWidget):
 
         # update selected project preview when selection changes
         self._project_combo.currentIndexChanged.connect(self._on_selection_changed)
+        self._project_combo.currentIndexChanged.connect(self._sync_input_with_selection)
 
     def refresh(self):
         self._project_combo.clear()
@@ -113,6 +119,17 @@ class GitHubWidget(QWidget):
         proj = next((p for p in self._repo.list_projects() if p.id == project_id), None)
         if proj and proj.github_html_url:
             webbrowser.open(proj.github_html_url)
+
+    def _sync_input_with_selection(self, idx: int):
+        project_id = self._project_combo.currentData()
+        if project_id is None:
+            self._github_input.clear()
+            return
+        proj = next((p for p in self._repo.list_projects() if p.id == project_id), None)
+        if proj and proj.github_full_name:
+            self._github_input.setText(proj.github_full_name)
+        else:
+            self._github_input.clear()
 
     def _on_selection_changed(self, idx: int):
         project_id = self._project_combo.currentData()
