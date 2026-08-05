@@ -16,11 +16,19 @@ class DatabaseConnection:
         else:
             self.db_path = db_path
 
+        # Use a shared connection per DatabaseConnection instance to avoid creating
+        # transient sqlite3.Connection objects during import-time operations.
         self._shared_conn: Optional[sqlite3.Connection] = None
-        if self.db_path == ":memory:":
-            self._shared_conn = sqlite3.connect(":memory:", check_same_thread=False)
+        try:
+            self._shared_conn = sqlite3.connect(self.db_path if self.db_path != ":memory:" else ":memory:", check_same_thread=False)
             self._shared_conn.row_factory = sqlite3.Row
             self._shared_conn.execute("PRAGMA foreign_keys = ON;")
+            # For file-backed DBs prefer WAL for concurrency
+            if self.db_path != ":memory:":
+                self._shared_conn.execute("PRAGMA journal_mode = WAL;")
+        except Exception:
+            # fallback: leave _shared_conn as None
+            self._shared_conn = None
 
         self._init_db()
 
@@ -45,8 +53,16 @@ class DatabaseConnection:
             schema_sql = f.read()
 
         conn = self.get_connection()
-        conn.executescript(schema_sql)
-        conn.commit()
+        try:
+            conn.executescript(schema_sql)
+            conn.commit()
+        finally:
+            # if this is not the shared in-memory connection, close it to avoid leaks
+            if self._shared_conn is None:
+                try:
+                    conn.close()
+                except Exception:
+                    pass
 
     @contextmanager
     def get_cursor(self) -> Generator[sqlite3.Cursor, None, None]:

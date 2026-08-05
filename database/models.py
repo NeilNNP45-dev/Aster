@@ -113,3 +113,44 @@ class Exam:
     status: str = "Planned"
     notes: str = ""
     created_at: Optional[str] = None
+
+
+@dataclass
+class CodingProject:
+    """Coding project entity."""
+    id: Optional[int] = None
+    name: str = ""
+    repo_path: Optional[str] = None
+    github_full_name: Optional[str] = None
+    github_html_url: Optional[str] = None
+    description: str = ""
+    language: str = ""
+    is_active: bool = True
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+
+
+@dataclass
+class CodingSession:
+    """Coding timer session log."""
+    id: Optional[int] = None
+    project_id: Optional[int] = None
+    start_at: str = ""
+    end_at: Optional[str] = None
+    duration_minutes: int = 0
+    session_type: str = "Coding"  # 'Coding', 'Short Break', 'Long Break'
+    notes: str = ""
+    created_at: Optional[str] = None
+
+
+@dataclass
+class CodingGoal:
+    """Daily coding goal (habit-like)."""
+    id: Optional[int] = None
+    title: str = ""
+    project_id: Optional[int] = None
+    is_completed: bool = False
+    reset_daily: bool = True
+    streak_count: int = 0
+    last_completed_at: Optional[str] = None
+    created_at: Optional[str] = None

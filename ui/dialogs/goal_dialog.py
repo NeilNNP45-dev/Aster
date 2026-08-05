@@ -7,13 +7,27 @@ from database.models import DailyGoal
 
 
 class GoalDialog(QDialog):
-    """Modal dialog for creating a new daily goal/habit."""
+    """Modal dialog for creating a new daily goal/habit.
 
-    def __init__(self, parent=None):
+    Accepts optional overrides so the same dialog can be reused for coding goals.
+    """
+
+    def __init__(
+        self,
+        parent=None,
+        dialog_title: str = "New Daily Goal",
+        title_placeholder: str = "e.g. Drink 2L of water",
+        category_placeholder: str = "e.g. Health, Study, Fitness",
+        reset_label: str = "Reset daily at midnight",
+    ):
         super().__init__(parent)
-        self.setWindowTitle("New Daily Goal")
+        self.setWindowTitle(dialog_title)
         self.setMinimumWidth(360)
         self.setModal(True)
+        self._dialog_title = dialog_title
+        self._title_placeholder = title_placeholder
+        self._category_placeholder = category_placeholder
+        self._reset_label = reset_label
         self._build()
 
     def _build(self):
@@ -24,14 +38,14 @@ class GoalDialog(QDialog):
         form.setSpacing(10)
 
         self._title_input = QLineEdit()
-        self._title_input.setPlaceholderText("e.g. Drink 2L of water")
+        self._title_input.setPlaceholderText(self._title_placeholder)
         self._title_input.setProperty("class", "form-input")
 
         self._category_input = QLineEdit()
-        self._category_input.setPlaceholderText("e.g. Health, Study, Fitness")
+        self._category_input.setPlaceholderText(self._category_placeholder)
         self._category_input.setProperty("class", "form-input")
 
-        self._reset_check = QCheckBox("Reset daily at midnight")
+        self._reset_check = QCheckBox(self._reset_label)
         self._reset_check.setChecked(True)
 
         form.addRow("Goal Title *", self._title_input)

@@ -109,3 +109,47 @@ CREATE TABLE IF NOT EXISTS exams (
     created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
     FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
 );
+
+-- ==================================================
+-- Coding Module (Version 0.4) - Minimal Schema
+-- ==================================================
+
+-- 10. Coding Projects
+CREATE TABLE IF NOT EXISTS coding_projects (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    repo_path TEXT,
+    github_full_name TEXT,
+    github_html_url TEXT,
+    description TEXT DEFAULT '',
+    language TEXT DEFAULT '',
+    is_active INTEGER NOT NULL DEFAULT 1 CHECK(is_active IN (0,1)),
+    created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+
+-- 11. Coding Sessions (timer logs)
+CREATE TABLE IF NOT EXISTS coding_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER,
+    start_at TEXT NOT NULL,
+    end_at TEXT,
+    duration_minutes INTEGER NOT NULL,
+    session_type TEXT NOT NULL CHECK(session_type IN ('Coding', 'Short Break', 'Long Break')),
+    notes TEXT DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+    FOREIGN KEY (project_id) REFERENCES coding_projects(id) ON DELETE SET NULL
+);
+
+-- 12. Coding Goals
+CREATE TABLE IF NOT EXISTS coding_goals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    project_id INTEGER,
+    is_completed INTEGER NOT NULL DEFAULT 0 CHECK(is_completed IN (0,1)),
+    reset_daily INTEGER NOT NULL DEFAULT 1 CHECK(reset_daily IN (0,1)),
+    streak_count INTEGER NOT NULL DEFAULT 0,
+    last_completed_at TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+    FOREIGN KEY (project_id) REFERENCES coding_projects(id) ON DELETE SET NULL
+);

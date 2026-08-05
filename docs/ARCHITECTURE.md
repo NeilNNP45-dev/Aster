@@ -372,55 +372,6 @@ graph TD
         QSS["assets/themes/dark.qss"]
     end
 
-    subgraph UILayer ["UI Layer (ui/)"]
-        MW["MainWindow (main_window.py)"]
-        SB["SidebarWidget (widgets/sidebar.py)"]
-        STACK["QStackedWidget"]
-        
-        P_HOME["HomePage (pages/home/page.py)"]
-        P_PROD["ProductivityPage (pages/productivity/page.py)"]
-        P_COLLEGE["CollegePage (pages/college/page.py)"]
-        P_CODING["CodingPage (pages/coding/page.py)"]
-        P_FIT["FitnessPage (pages/fitness/page.py)"]
-        P_ANALYTICS["AnalyticsPage (pages/analytics/page.py)"]
-        P_SET["SettingsPage (pages/settings/page.py)"]
-    end
-
-    subgraph ServicesLayer ["Services Layer (services/)"]
-        S_GH["GitHub Service"]
-        S_TIMER["Timer Service"]
-        S_ATT["Attendance Service"]
-        S_PROD["Productivity Service"]
-        S_AI["Luna AI Assistant"]
-    end
-
-    subgraph DataLayer ["Data Layer (database/)"]
-        DB["SQLite Database"]
-        MODELS["ORM / Data Models"]
-    end
-
-    MAIN -->|Loads Theme| QSS
-    MAIN -->|Instantiates| MW
-    MW -->|Contains| SB
-    MW -->|Contains| STACK
-    STACK -->|Contains| P_HOME
-    STACK -->|Contains| P_PROD
-    STACK -->|Contains| P_COLLEGE
-    STACK -->|Contains| P_CODING
-    STACK -->|Contains| P_FIT
-    STACK -->|Contains| P_ANALYTICS
-    STACK -->|Contains| P_SET
-
-    P_PROD -.->|Future Calls| S_PROD
-    P_CODING -.->|Future Calls| S_GH
-    P_CODING -.->|Future Calls| S_TIMER
-    P_COLLEGE -.->|Future Calls| S_ATT
-    P_ANALYTICS -.->|Future Calls| S_AI
-
-    ServicesLayer -.->|Reads/Writes| DataLayer
-```
-
----
 
 ## 10. Developer Notes & Guidelines
 
@@ -747,6 +698,7 @@ Modal dialogs keep the main page clean and prevent users from accidentally editi
   - *Direct SQLite calls inside widgets:* Rejected — violates separation of concerns and makes testing impossible without a full Qt application running.
   - *SQLAlchemy ORM:* Rejected — introduces a significant external dependency and abstraction overhead that is unnecessary for Aster's scale. Standard `sqlite3` is part of the Python standard library and needs no installation.
 
+
 ### 2. `@dataclass` Models Instead of ORM Mapped Objects
 
 - **Why Chosen:** Dataclasses are plain Python objects with no framework magic. They serialize trivially, have IDE autocomplete, and have zero runtime overhead.
@@ -938,3 +890,121 @@ One additional fix was made while integrating the College work:
 ## V0.3-5. Current Direction
 
 The College module now provides a solid foundation for future expansion. The architecture remains intentionally simple and modular, so later improvements such as richer editing flows, better filtering, better attendance analytics, or cross-module summaries can be added without restructuring the app.
+
+---
+
+# ═══════════════════════════════════════════════════════════════════════
+# VERSION 0.4 – CODING MODULE
+# ═══════════════════════════════════════════════════════════════════════
+
+## V0.4-1. Overview
+
+Version 0.4 adds a first-class Coding module to Aster. This version introduces:
+- A dedicated coding timer with session logging.
+- A software project tracker for managing active coding projects.
+- Daily coding goals with completion toggles and streak handling.
+- Basic GitHub metadata integration for project sync.
+- UI styling and component behavior consistent with the existing Productivity module.
+
+The goal of v0.4 was to keep the feature set intentionally focused and aligned with the existing Aster architecture: UI widgets call services, services call repositories, and repositories own SQLite persistence.
+
+## V0.4-2. What Was Built
+
+### Database Layer (`database/`)
+
+| File | Role |
+|---|---|
+| [database/schema.sql](file:///d:/Aster/database/schema.sql) | Added `coding_projects`, `coding_sessions`, and `coding_goals` tables for the Coding domain |
+| [database/models.py](file:///d:/Aster/database/models.py) | Added `CodingProject`, `CodingSession`, `CodingGoal` dataclasses |
+| [database/repositories/coding_repository.py](file:///d:/Aster/database/repositories/coding_repository.py) | CRUD persistence for coding projects, sessions, and goals |
+
+### Services Layer (`services/coding/`)
+
+| File | Role |
+|---|---|
+| [services/coding/coding_timer_service.py](file:///d:/Aster/services/coding/coding_timer_service.py) | Timer service that emits tick/state/session completion events and logs sessions |
+| [services/coding/project_service.py](file:///d:/Aster/services/coding/project_service.py) | High-level project operations and aggregation |
+| [services/coding/goals_service.py](file:///d:/Aster/services/coding/goals_service.py) | Goal creation and completion toggle logic |
+| [services/coding/github_service.py](file:///d:/Aster/services/coding/github_service.py) | Minimal GitHub metadata fetch and project sync |
+
+### UI Layer (`ui/pages/coding/`)
+
+| File | Role |
+|---|---|
+| [ui/pages/coding/page.py](file:///d:/Aster/ui/pages/coding/page.py) | CodingPage wrapper that constructs Coding services and passes them to tab widgets |
+| [ui/pages/coding/coding_timer_widget.py](file:///d:/Aster/ui/pages/coding/coding_timer_widget.py) | Coding timer UI with countdown, project selection, and session notes |
+| [ui/pages/coding/projects_widget.py](file:///d:/Aster/ui/pages/coding/projects_widget.py) | Project list and add-project flow |
+| [ui/pages/coding/coding_goals_widget.py](file:///d:/Aster/ui/pages/coding/coding_goals_widget.py) | Goal list and add-goal flow for coding tasks |
+| [ui/pages/coding/github_widget.py](file:///d:/Aster/ui/pages/coding/github_widget.py) | GitHub project sync UI with optional token input |
+| [ui/dialogs/session_note_dialog.py](file:///d:/Aster/ui/dialogs/session_note_dialog.py) | Modal for adding notes after a coding session |
+| [ui/dialogs/goal_dialog.py](file:///d:/Aster/ui/dialogs/goal_dialog.py) | Reused for coding goal creation with coding-specific labels and placeholders |
+
+### Tests (`tests/`)
+
+| File | Role |
+|---|---|
+| [tests/test_coding_repository.py](file:///d:/Aster/tests/test_coding_repository.py) | Repository CRUD and query tests for Coding domain |
+| [tests/test_coding_services.py](file:///d:/Aster/tests/test_coding_services.py) | Service behavior tests for project totals and goal toggles |
+| [tests/test_coding_timer_service.py](file:///d:/Aster/tests/test_coding_timer_service.py) | Timer completion and session logging tests |
+
+---
+
+## V0.4-3. Architecture Highlights
+
+### CodingPage follows the same domain pattern as ProductivityPage
+- A single `CodingPage` creates shared `DatabaseConnection`, `CodingRepository`, and Coding services.
+- These shared objects are passed into tab widgets via a simple service registry dictionary.
+- This keeps each tab widget focused on UI behavior while the services encapsulate business logic.
+
+### CodingTimerService is a Qt-enabled service, not a widget
+- Extends `QObject` and emits `tick`, `state_changed`, and `session_completed` signals.
+- Logs `CodingSession` records on timer completion.
+- Keeps timing logic separate from display logic, enabling future reuse or headless testing.
+
+### GitHub integration is intentionally lightweight
+- `GitHubService` fetches metadata from `api.github.com/repos/<owner>/<repo>`.
+- Tokens are optional and not persisted in the database.
+- The GitHub widget displays metadata, allows manual sync, and opens the repository URL in the browser.
+
+### UI theme alignment
+- Coding tab widgets use the same QSS classes as existing Productivity widgets:
+  - `pill-tab`, `page-header`, `page-subtitle`, `card-title`, `form-combo`, `primary-btn`, `secondary-btn`, `danger-btn`, and `status-badge`
+- This ensures the Coding module matches the established dark theme and visual language.
+
+---
+
+## V0.4-4. Key Design Decisions
+
+1. **Keep the Coding module focused.**
+   - No full GitHub issue integration, no auth workflow, no analytics dashboard. Just the core flow: project tracker, timer sessions, coding goals, and repo metadata sync.
+
+2. **Reuse existing architecture patterns.**
+   - `CodingPage` mirrors `ProductivityPage` structure.
+   - Services are injected into widgets, not created inside widget event handlers.
+   - Repositories own all SQL and date persistence.
+
+3. **No token persistence.**
+   - GitHub tokens are used only for the current sync flow and not stored. This keeps the feature safer and simpler.
+
+4. **Session notes are optional and modal.**
+   - After a coding timer completes, users may add notes via `SessionNoteDialog`, but the timer does not require notes to finish.
+
+---
+
+## V0.4-5. Non-Goals for This Version
+
+- No GitHub commit history graph or contribution calendar.
+- No automated issue creation.
+- No cross-project analytics or productivity scoring.
+- No multi-user sync or cloud backup.
+
+---
+
+## V0.4-6. Future Improvements After v0.4
+
+- Move GitHub sync into a `QThread` worker to avoid blocking the main thread during API calls.
+- Add a `CodingSessionsWidget` to review past sessions and durations.
+- Add better project editing and deletion support.
+- Add keyboard shortcuts for timer start/pause/stop.
+
+---
