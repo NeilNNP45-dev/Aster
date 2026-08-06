@@ -154,3 +154,26 @@ class CodingGoal:
     streak_count: int = 0
     last_completed_at: Optional[str] = None
     created_at: Optional[str] = None
+
+
+@dataclass
+class WorkoutEntry:
+    """Fitness workout log entry."""
+    id: Optional[int] = None
+    title: str = ""
+    workout_type: str = "Workout"
+    duration_minutes: int = 0
+    calories: int = 0
+    notes: str = ""
+    performed_at: Optional[str] = None
+    created_at: Optional[str] = None
+
+
+@dataclass
+class WeightEntry:
+    """Daily body weight record."""
+    id: Optional[int] = None
+    weight_kg: float = 0.0
+    note: str = ""
+    recorded_at: Optional[str] = None
+    created_at: Optional[str] = None

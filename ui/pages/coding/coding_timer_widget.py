@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QComboBox
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QComboBox, QDialog
 from PySide6.QtCore import Qt
 
 from services.coding.coding_timer_service import CodingTimerService
@@ -84,7 +84,7 @@ class CodingTimerWidget(QWidget):
     def _on_session_completed(self, session):
         # prompt for optional notes and update session.record
         dlg = SessionNoteDialog(self)
-        if dlg.exec() == dlg.accepted:
+        if dlg.exec() == QDialog.Accepted:
             notes = dlg.get_notes()
             if notes:
                 # update session notes via repository

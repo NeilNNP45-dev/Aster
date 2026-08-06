@@ -153,3 +153,24 @@ CREATE TABLE IF NOT EXISTS coding_goals (
     created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
     FOREIGN KEY (project_id) REFERENCES coding_projects(id) ON DELETE SET NULL
 );
+
+-- 13. Fitness: Workout Logs
+CREATE TABLE IF NOT EXISTS fitness_workouts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    workout_type TEXT NOT NULL DEFAULT 'Workout',
+    duration_minutes INTEGER NOT NULL DEFAULT 0,
+    calories INTEGER NOT NULL DEFAULT 0,
+    notes TEXT DEFAULT '',
+    performed_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+    created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+
+-- 14. Fitness: Weight Logs
+CREATE TABLE IF NOT EXISTS fitness_weights (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    weight_kg REAL NOT NULL,
+    note TEXT DEFAULT '',
+    recorded_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+    created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);

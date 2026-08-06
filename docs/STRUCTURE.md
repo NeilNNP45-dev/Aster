@@ -31,8 +31,10 @@ Aster/
 │   └── dialogs/
 │
 ├── database/               # SQLite database and models
-│   ├── database.py
+│   ├── connection.py
+│   ├── schema.sql
 │   ├── models.py
+│   ├── repositories/
 │   └── migrations/
 │
 ├── services/               # Business logic and integrations
@@ -40,6 +42,9 @@ Aster/
 │   ├── timer/
 │   ├── attendance/
 │   ├── productivity/
+│   ├── college/
+│   ├── coding/
+│   ├── fitness/
 │   └── analytics/
 │
 ├── assets/

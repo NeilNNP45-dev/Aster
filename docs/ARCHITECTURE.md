@@ -1,4 +1,4 @@
-# 🌼 Aster System Architecture Documentation (Versions 0.1 → 0.2)
+# 🌼 Aster System Architecture Documentation (Versions 0.1 → 0.5)
 
 Welcome to the Aster developer documentation! This document provides a comprehensive technical overview of Aster's architecture, design decisions, component relationships, and extensibility guidelines for software engineers working on the project.
 
@@ -178,7 +178,7 @@ Each domain page is built as an independent `QWidget` subclass inside its own fo
 
 #### [ui/pages/home/page.py](file:///d:/life_dashboard/Aster/ui/pages/home/page.py)
 - **Class:** `HomePage(QWidget)`
-- **Purpose:** Displays the home dashboard, welcome greeting, and system status card.
+- **Purpose:** Displays the home dashboard, welcome greeting, overview cards, and feature highlights.
 
 #### [ui/pages/productivity/page.py](file:///d:/life_dashboard/Aster/ui/pages/productivity/page.py)
 - **Class:** `ProductivityPage(QWidget)`
@@ -194,7 +194,7 @@ Each domain page is built as an independent `QWidget` subclass inside its own fo
 
 #### [ui/pages/fitness/page.py](file:///d:/life_dashboard/Aster/ui/pages/fitness/page.py)
 - **Class:** `FitnessPage(QWidget)`
-- **Purpose:** Placeholder view outlining planned features for Version 0.5 (Workout Log, Weight Tracker, Progress).
+- **Purpose:** Implements the Version 0.5 MVP for workout logging, weight tracking, and simple progress summaries.
 
 #### [ui/pages/analytics/page.py](file:///d:/life_dashboard/Aster/ui/pages/analytics/page.py)
 - **Class:** `AnalyticsPage(QWidget)`
@@ -1017,5 +1017,16 @@ The goal of v0.4 was to keep the feature set intentionally focused and aligned w
 - Improved GitHub sync feedback messages and auto-filled project repo fields when selecting a project.
 - Enhanced the Home dashboard with an overview card, quick start guidance, and a highlight section for new features.
 - Kept the Home page visually consistent with the app theme while making the landing experience more informative.
+
+---
+
+## V0.5. Fitness and Progress Tracking Update
+
+- Added a lightweight Fitness MVP with workout logging and body weight tracking.
+- Introduced dedicated fitness models and persistence tables for workouts and weight entries.
+- Added a Fitness page with summary cards, workout history, and weight history widgets.
+- Implemented dialogs for logging workouts and weight entries from the main Fitness dashboard.
+- Kept the Fitness integration aligned with the existing service, repository, and UI layering patterns used elsewhere in the app.
+
 
 ---
