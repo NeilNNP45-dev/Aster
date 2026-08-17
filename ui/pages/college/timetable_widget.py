@@ -55,9 +55,18 @@ class TimetableWidget(QWidget):
             return
 
         for entry in entries:
-            row = QLabel(f"{entry.day_of_week} • {entry.start_time}–{entry.end_time} • {entry.room or entry.location or 'No location'}")
-            row.setProperty("class", "card-description")
-            self._layout.insertWidget(self._layout.count() - 1, row)
+            row_frame = QFrame()
+            row_frame.setProperty("class", "task-item")
+            rl = QHBoxLayout(row_frame)
+            rl.setContentsMargins(14, 10, 14, 10)
+            d_lbl = QLabel(f"{entry.day_of_week} ({entry.start_time}–{entry.end_time})")
+            d_lbl.setProperty("class", "task-title")
+            loc_lbl = QLabel(entry.room or entry.location or 'No location')
+            loc_lbl.setProperty("class", "task-due")
+            rl.addWidget(d_lbl)
+            rl.addStretch()
+            rl.addWidget(loc_lbl)
+            self._layout.insertWidget(self._layout.count() - 1, row_frame)
 
     def _open_create_dialog(self):
         courses = self._service.get_courses()

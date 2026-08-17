@@ -177,3 +177,61 @@ class WeightEntry:
     note: str = ""
     recorded_at: Optional[str] = None
     created_at: Optional[str] = None
+
+
+@dataclass
+class DomainSummary:
+    """Aggregated metrics summary across all domains."""
+    total_focus_minutes: int = 0
+    tasks_completed: int = 0
+    tasks_total: int = 0
+    goals_completed: int = 0
+    goals_total: int = 0
+    active_streaks: int = 0
+    classes_attended: int = 0
+    classes_total: int = 0
+    assignments_completed: int = 0
+    assignments_total: int = 0
+    coding_minutes: int = 0
+    active_projects: int = 0
+    workouts_completed: int = 0
+    workout_minutes: int = 0
+    calories_burned: int = 0
+    latest_weight_kg: Optional[float] = None
+
+
+@dataclass
+class FocusTimeStats:
+    """Daily focus time breakdown."""
+    date_str: str = ""
+    pomodoro_minutes: int = 0
+    coding_minutes: int = 0
+    total_minutes: int = 0
+
+
+@dataclass
+class AnalyticsOverview:
+    """Combined analytics data for a specific time period."""
+    start_date: str = ""
+    end_date: str = ""
+    total_focus_hours: float = 0.0
+    task_completion_rate: float = 0.0
+    attendance_rate: float = 0.0
+    summary: Optional[DomainSummary] = None
+
+
+@dataclass
+class ReportSummary:
+    """Structured report document representation."""
+    report_type: str = "Weekly"  # 'Weekly', 'Monthly'
+    period_label: str = ""
+    start_date: str = ""
+    end_date: str = ""
+    summary_text: str = ""
+    highlights: Optional[list] = None
+    productivity_notes: str = ""
+    college_notes: str = ""
+    coding_notes: str = ""
+    fitness_notes: str = ""
+    generated_at: str = ""
+

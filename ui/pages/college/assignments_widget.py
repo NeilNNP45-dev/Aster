@@ -54,9 +54,18 @@ class AssignmentsWidget(QWidget):
             return
 
         for assignment in assignments:
-            row = QLabel(f"{assignment.title} • {assignment.due_date or 'No due date'} • {assignment.status}")
-            row.setProperty("class", "card-description")
-            self._layout.insertWidget(self._layout.count() - 1, row)
+            row_frame = QFrame()
+            row_frame.setProperty("class", "task-item")
+            rl = QHBoxLayout(row_frame)
+            rl.setContentsMargins(14, 10, 14, 10)
+            t_lbl = QLabel(assignment.title)
+            t_lbl.setProperty("class", "task-title")
+            m_lbl = QLabel(f"{assignment.due_date or 'No due date'} • {assignment.status}")
+            m_lbl.setProperty("class", "task-due")
+            rl.addWidget(t_lbl)
+            rl.addStretch()
+            rl.addWidget(m_lbl)
+            self._layout.insertWidget(self._layout.count() - 1, row_frame)
 
     def _open_create_dialog(self):
         courses = self._service.get_courses()

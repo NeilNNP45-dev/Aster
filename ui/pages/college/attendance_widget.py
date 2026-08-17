@@ -55,9 +55,18 @@ class AttendanceWidget(QWidget):
 
         for course in courses:
             summary = self._service.get_attendance_summary(course.id)
-            row = QLabel(f"{course.name}: {summary['percentage']}% ({summary['present_count']}/{summary['total_records']})")
-            row.setProperty("class", "card-description")
-            self._layout.insertWidget(self._layout.count() - 1, row)
+            row_frame = QFrame()
+            row_frame.setProperty("class", "task-item")
+            rl = QHBoxLayout(row_frame)
+            rl.setContentsMargins(14, 10, 14, 10)
+            c_lbl = QLabel(course.name)
+            c_lbl.setProperty("class", "task-title")
+            pct_lbl = QLabel(f"{summary['percentage']}% ({summary['present_count']}/{summary['total_records']} attended)")
+            pct_lbl.setProperty("class", "task-due")
+            rl.addWidget(c_lbl)
+            rl.addStretch()
+            rl.addWidget(pct_lbl)
+            self._layout.insertWidget(self._layout.count() - 1, row_frame)
 
     def _open_create_dialog(self):
         courses = self._service.get_courses()

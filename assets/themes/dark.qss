@@ -53,8 +53,28 @@ QPushButton.nav-btn:checked, QPushButton.nav-btn.active {
 }
 
 /* --- Main Content Area & Pages --- */
-#ContentArea {
+#ContentArea, QStackedWidget {
     background-color: #121214;
+}
+
+#ProductivityPage, #CollegePage, #CodingPage, #FitnessPage, #AnalyticsPage, #SettingsPage, #HomePage,
+#TasksWidget, #GoalsWidget, #NotesWidget, #PomodoroWidget,
+#CoursesWidget, #TimetableWidget, #AttendanceWidget, #AssignmentsWidget, #ExamsWidget {
+    background-color: #121214;
+}
+
+/* --- Global Scroll Areas & Container Viewports --- */
+QScrollArea, QAbstractScrollArea {
+    background-color: transparent;
+    border: none;
+}
+
+QScrollArea > QWidget, QScrollArea > QWidget > QWidget {
+    background-color: transparent;
+}
+
+QScrollArea QWidget#qt_scrollarea_viewport {
+    background-color: transparent;
 }
 
 .page-container {
@@ -244,7 +264,7 @@ QLineEdit[class="note-title-input"]:focus { border-bottom-color: #7C3AED; }
 
 QTextEdit[class="note-body-editor"] { background-color: transparent; border: none; color: #D1D5DB; font-size: 14px; selection-background-color: #2E2544; }
 
-/* --- Form Controls --- */
+/* --- Form Controls & Inputs --- */
 QLineEdit[class="form-input"], QTextEdit[class="form-input"] {
     background-color: #1E1E24;
     border: 1px solid #2D2D38;
@@ -255,6 +275,62 @@ QLineEdit[class="form-input"], QTextEdit[class="form-input"] {
     selection-background-color: #2E2544;
 }
 QLineEdit[class="form-input"]:focus, QTextEdit[class="form-input"]:focus { border-color: #7C3AED; }
+
+QSpinBox, QDoubleSpinBox, QTimeEdit, QDateEdit, QDateTimeEdit,
+QSpinBox[class="form-spinbox"], QDoubleSpinBox[class="form-spinbox"] {
+    background-color: #1E1E24;
+    border: 1px solid #2D2D38;
+    border-radius: 8px;
+    color: #F3F4F6;
+    padding: 6px 10px;
+    font-size: 13px;
+    selection-background-color: #2E2544;
+}
+QSpinBox:focus, QDoubleSpinBox:focus, QTimeEdit:focus, QDateEdit:focus, QDateTimeEdit:focus {
+    border-color: #7C3AED;
+}
+QSpinBox::up-button, QDoubleSpinBox::up-button, QTimeEdit::up-button, QDateEdit::up-button, QDateTimeEdit::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 20px;
+    border-left: 1px solid #2D2D38;
+    background-color: #262632;
+    border-top-right-radius: 7px;
+}
+QSpinBox::down-button, QDoubleSpinBox::down-button, QTimeEdit::down-button, QDateEdit::down-button, QDateTimeEdit::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 20px;
+    border-left: 1px solid #2D2D38;
+    background-color: #262632;
+    border-bottom-right-radius: 7px;
+}
+QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover, QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {
+    background-color: #38384A;
+}
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow, QTimeEdit::up-arrow, QDateEdit::up-arrow, QDateTimeEdit::up-arrow {
+    image: none;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 5px solid #A78BFA;
+    width: 0px;
+    height: 0px;
+}
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow, QTimeEdit::down-arrow, QDateEdit::down-arrow, QDateTimeEdit::down-arrow {
+    image: none;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #A78BFA;
+    width: 0px;
+    height: 0px;
+}
+
+QFormLayout QLabel {
+    color: #D1D5DB;
+    font-size: 13px;
+    font-weight: 500;
+}
+
 
 QComboBox {
     background-color: #1E1E24;
@@ -357,3 +433,37 @@ QLabel[class="log-entry"] { font-size: 12px; color: #6B7280; padding: 4px 0px; b
 QDialog { background-color: #1A1A1E; }
 QDialogButtonBox QPushButton { background-color: #26262E; color: #D1D5DB; border: 1px solid #3D3D4A; border-radius: 8px; padding: 7px 20px; font-size: 13px; min-width: 80px; }
 QDialogButtonBox QPushButton:hover { background-color: #7C3AED; color: #FFFFFF; border-color: #7C3AED; }
+
+/* --- Analytics Styles --- */
+QFrame[class="stat-card"] { background-color: #1E1E24; border: 1px solid #2D2D38; border-radius: 12px; padding: 16px; }
+QLabel[class="stat-number"] { font-size: 28px; font-weight: 700; color: #F9FAFB; }
+QLabel[class="stat-label"] { font-size: 13px; font-weight: 500; color: #9CA3AF; }
+QLabel[class="stat-badge-up"] { font-size: 11px; font-weight: 600; color: #34D399; background-color: #064E3B; border-radius: 4px; padding: 2px 6px; }
+QLabel[class="stat-badge-down"] { font-size: 11px; font-weight: 600; color: #F87171; background-color: #7F1D1D; border-radius: 4px; padding: 2px 6px; }
+QFrame[class="report-card"] { background-color: #191920; border: 1px solid #2D2D38; border-radius: 12px; padding: 20px; }
+QLabel[class="report-header"] { font-size: 18px; font-weight: 700; color: #C4B5FD; margin-bottom: 8px; }
+QLabel[class="report-subheader"] { font-size: 14px; font-weight: 600; color: #E5E7EB; margin-top: 12px; margin-bottom: 4px; }
+QLabel[class="report-text"] { font-size: 13px; color: #D1D5DB; line-height: 1.5; }
+
+/* --- Trend Charts --- */
+QProgressBar[class="trend-progress"] {
+    background-color: #26262E;
+    border: 1px solid #2D2D38;
+    border-radius: 7px;
+}
+QProgressBar[class="trend-progress"]::chunk {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #7C3AED, stop:1 #C4B5FD);
+    border-radius: 6px;
+}
+QFrame[class="trend-row"] {
+    background-color: #1E1E24;
+    border: 1px solid #2D2D38;
+    border-radius: 8px;
+    padding: 8px 12px;
+}
+QFrame[class="trend-row"]:hover {
+    border-color: #3D3D50;
+    background-color: #23232C;
+}
+
+

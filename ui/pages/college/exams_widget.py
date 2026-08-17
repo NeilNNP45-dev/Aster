@@ -54,9 +54,18 @@ class ExamsWidget(QWidget):
             return
 
         for exam in exams:
-            row = QLabel(f"{exam.title} • {exam.scheduled_at} • {exam.location or 'No location'}")
-            row.setProperty("class", "card-description")
-            self._layout.insertWidget(self._layout.count() - 1, row)
+            row_frame = QFrame()
+            row_frame.setProperty("class", "task-item")
+            rl = QHBoxLayout(row_frame)
+            rl.setContentsMargins(14, 10, 14, 10)
+            t_lbl = QLabel(exam.title)
+            t_lbl.setProperty("class", "task-title")
+            m_lbl = QLabel(f"{exam.scheduled_at} • {exam.location or 'No location'}")
+            m_lbl.setProperty("class", "task-due")
+            rl.addWidget(t_lbl)
+            rl.addStretch()
+            rl.addWidget(m_lbl)
+            self._layout.insertWidget(self._layout.count() - 1, row_frame)
 
     def _open_create_dialog(self):
         courses = self._service.get_courses()

@@ -36,6 +36,7 @@ class CourseDialog(QDialog):
         self._instructor_input.setProperty("class", "form-input")
 
         self._credit_input = QSpinBox()
+        self._credit_input.setProperty("class", "form-spinbox")
         self._credit_input.setRange(0, 10)
         self._credit_input.setValue(3)
 

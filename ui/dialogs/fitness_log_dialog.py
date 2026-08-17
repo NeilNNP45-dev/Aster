@@ -20,10 +20,12 @@ class FitnessLogDialog(QDialog):
         self._type.setPlaceholderText("e.g. Cardio")
 
         self._duration = QSpinBox()
+        self._duration.setProperty("class", "form-spinbox")
         self._duration.setRange(0, 600)
         self._duration.setValue(30)
 
         self._calories = QSpinBox()
+        self._calories.setProperty("class", "form-spinbox")
         self._calories.setRange(0, 5000)
         self._calories.setValue(0)
 

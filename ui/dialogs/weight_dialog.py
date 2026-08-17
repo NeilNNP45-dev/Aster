@@ -12,6 +12,7 @@ class WeightDialog(QDialog):
         form = QFormLayout()
 
         self._weight = QDoubleSpinBox()
+        self._weight.setProperty("class", "form-spinbox")
         self._weight.setRange(20.0, 300.0)
         self._weight.setDecimals(1)
         self._weight.setValue(70.0)

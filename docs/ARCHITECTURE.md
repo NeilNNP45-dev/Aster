@@ -1030,3 +1030,76 @@ The goal of v0.4 was to keep the feature set intentionally focused and aligned w
 
 
 ---
+
+# ═══════════════════════════════════════════════════════════════════════
+# VERSION 0.6 – ANALYTICS & REPORTS MODULE
+# ═══════════════════════════════════════════════════════════════════════
+
+## V0.6-1. Overview
+
+Version 0.6 transforms Aster into a unified analytics engine by aggregating performance metrics across all active domains: Productivity, College, Coding, and Fitness.
+
+Key features introduced in Version 0.6:
+- Multi-domain database aggregation across tasks, daily goals, pomodoro focus, college attendance, assignments, coding timer sessions, active projects, and fitness workouts.
+- ISO calendar week calculation defaulting from Monday to Sunday.
+- Period range filtering (`this_week`, `last_week`, `this_month`, `last_30_days`).
+- Overview dashboard with stat cards and week-over-week trend indicators (+/- % change).
+- Daily Focus Timeline visualizer showing progress bars scaled per day for focus minutes (Pomodoro + Coding).
+- Structured Weekly & Monthly report generator with highlights, domain notes, and clipboard export.
+- Foundational data structures (`ReportSummary`, `AnalyticsOverview`) prepared for Luna AI assistant integration in Version 0.7.
+
+---
+
+## V0.6-2. What Was Built (Complete File Inventory)
+
+### Database & Repository Layer (`database/`)
+
+| File | Role |
+|---|---|
+| [database/models.py](file:///d:/Aster/database/models.py) | Added `DomainSummary`, `FocusTimeStats`, `AnalyticsOverview`, and `ReportSummary` dataclasses |
+| [database/repositories/analytics_repository.py](file:///d:/Aster/database/repositories/analytics_repository.py) | Read-only SQL aggregation queries across 9 tables with ISO Monday-Sunday week bounds calculation |
+
+### Services Layer (`services/`)
+
+| File | Role |
+|---|---|
+| [services/analytics/analytics_service.py](file:///d:/Aster/services/analytics/analytics_service.py) | Business logic service for date range resolution, week-over-week trend comparisons, and report compilation |
+
+### UI Layer (`ui/pages/analytics/`)
+
+| File | Role |
+|---|---|
+| [ui/pages/analytics/page.py](file:///d:/Aster/ui/pages/analytics/page.py) | Main Analytics container widget with pill sub-tab navigation |
+| [ui/pages/analytics/overview_widget.py](file:///d:/Aster/ui/pages/analytics/overview_widget.py) | Multi-domain summary dashboard with stat cards and trend badges |
+| [ui/pages/analytics/trends_widget.py](file:///d:/Aster/ui/pages/analytics/trends_widget.py) | Daily focus breakdown timeline visualizer adhering to theme QSS rules |
+| [ui/pages/analytics/reports_widget.py](file:///d:/Aster/ui/pages/analytics/reports_widget.py) | Structured Weekly and Monthly report generator with copy-to-clipboard functionality |
+
+### Styling (`assets/`)
+
+| File | Change |
+|---|---|
+| [assets/themes/dark.qss](file:///d:/Aster/assets/themes/dark.qss) | Added QSS styling rules for `.stat-card`, `.stat-number`, `.stat-label`, `.stat-badge-up`, `.stat-badge-down`, `.report-card`, `QProgressBar[class="trend-progress"]`, and `QFrame[class="trend-row"]` |
+
+### Tests (`tests/`)
+
+| File | Role |
+|---|---|
+| [tests/test_analytics_repository.py](file:///d:/Aster/tests/test_analytics_repository.py) | Unit tests verifying ISO week bounds and multi-table data aggregation |
+| [tests/test_analytics_service.py](file:///d:/Aster/tests/test_analytics_service.py) | Unit tests for period resolution, trend percentage calculations, and report summary generation |
+
+---
+
+## V0.6-3. Architecture & Key Decisions
+
+1. **No External Charting Dependencies:**
+   - Visual trend bars use PySide6 `QProgressBar` styled via QSS (`trend-progress`) with violet linear gradients (`#7C3AED` -> `#C4B5FD`). This avoids adding external charting libraries (like `matplotlib`) and ensures 100% theme consistency and fast UI rendering.
+
+2. **Read-Only Aggregation Repository:**
+   - `AnalyticsRepository` performs SELECT queries across existing domain tables without modifying schema or adding database locks.
+
+3. **Strict ISO Monday-to-Sunday Week Calculation:**
+   - Week bounds are computed using `dt - timedelta(days=dt.weekday())` for Monday through Sunday.
+
+4. **Preparation for Luna AI (Version 0.7):**
+   - The `ReportSummary` dataclass and `generate_report()` method produce structured data objects specifically designed to be consumed by Luna AI in Version 0.7 for generating personalized insights and recommendations.
+
