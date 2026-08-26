@@ -1,3 +1,4 @@
+from urllib.parse import urlparse
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QComboBox, QLineEdit, QInputDialog
 import webbrowser
 
@@ -52,6 +53,16 @@ class GitHubWidget(QWidget):
         self._project_combo.currentIndexChanged.connect(self._on_selection_changed)
         self._project_combo.currentIndexChanged.connect(self._sync_input_with_selection)
 
+    @staticmethod
+    def _is_valid_github_url(url: str) -> bool:
+        if not url:
+            return False
+        try:
+            parsed = urlparse(url.strip())
+            return parsed.scheme.lower() == "https" and (parsed.hostname or "").lower() == "github.com"
+        except Exception:
+            return False
+
     def refresh(self):
         self._project_combo.clear()
         if not self._repo:
@@ -68,7 +79,12 @@ class GitHubWidget(QWidget):
         if project_id is None:
             self._status.setText("No project selected")
             return
-        token, ok = QInputDialog.getText(self, "GitHub Token (optional)", "Personal Access Token (leave blank for unauthenticated):")
+        token, ok = QInputDialog.getText(
+            self,
+            "GitHub Token (optional)",
+            "Personal Access Token (leave blank for unauthenticated):",
+            QLineEdit.Password,
+        )
         if not ok:
             return
         token = token.strip() or None
@@ -108,7 +124,7 @@ class GitHubWidget(QWidget):
             self.refresh()
             # after refresh, enable open button if url exists
             proj = next((p for p in self._repo.list_projects() if p.id == project_id), None)
-            if proj and proj.github_html_url:
+            if proj and self._is_valid_github_url(proj.github_html_url):
                 self._open_btn.setEnabled(True)
                 self._desc.setText(proj.description or "")
 
@@ -118,7 +134,11 @@ class GitHubWidget(QWidget):
             return
         proj = next((p for p in self._repo.list_projects() if p.id == project_id), None)
         if proj and proj.github_html_url:
-            webbrowser.open(proj.github_html_url)
+            url = proj.github_html_url.strip()
+            if self._is_valid_github_url(url):
+                webbrowser.open(url)
+            else:
+                self._status.setText("Invalid or unsupported repository URL")
 
     def _sync_input_with_selection(self, idx: int):
         project_id = self._project_combo.currentData()
@@ -140,7 +160,8 @@ class GitHubWidget(QWidget):
         proj = next((p for p in self._repo.list_projects() if p.id == project_id), None)
         if proj:
             self._desc.setText(proj.description or "")
-            self._open_btn.setEnabled(bool(proj.github_html_url))
+            self._open_btn.setEnabled(self._is_valid_github_url(proj.github_html_url))
         else:
             self._open_btn.setEnabled(False)
             self._desc.setText("")
+

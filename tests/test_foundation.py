@@ -11,6 +11,19 @@ class TestFoundation(unittest.TestCase):
     def setUp(self):
         self.window = MainWindow()
 
+    def tearDown(self):
+        if hasattr(self, "window") and self.window is not None:
+            for i in range(self.window.stacked_widget.count()):
+                page = self.window.stacked_widget.widget(i)
+                if hasattr(page, "_db") and page._db is not None:
+                    page._db.close()
+                if hasattr(page, "_repo") and page._repo is not None:
+                    page._repo.close()
+            self.window.close()
+            self.window.deleteLater()
+            self.window = None
+
+
     def test_window_properties(self):
         self.assertEqual(self.window.windowTitle(), "Aster")
         self.assertEqual(self.window.width(), 1000)

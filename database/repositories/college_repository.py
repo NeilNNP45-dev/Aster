@@ -10,6 +10,17 @@ class CollegeRepository:
     def __init__(self, db_conn: Optional[DatabaseConnection] = None):
         self.db = db_conn or DatabaseConnection()
 
+    def close(self):
+        if hasattr(self, "db") and self.db is not None:
+            self.db.close()
+
+    def __del__(self):
+        try:
+            self.close()
+        except Exception:
+            pass
+
+
     def add_course(self, course: Course) -> Course:
         query = """
             INSERT INTO courses (name, code, instructor_name, credit_hours, description, color_tag, is_active)

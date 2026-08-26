@@ -11,6 +11,11 @@ class TestCodingTimerService(unittest.TestCase):
         self.repo = CodingRepository(db_conn=self.conn)
         self.timer = CodingTimerService(repo=self.repo)
 
+    def tearDown(self):
+        if hasattr(self, "conn") and self.conn is not None:
+            self.conn.close()
+
+
     def test_basic_timer_logs_session(self):
         # start a very short timer and simulate ticks
         self.timer.start(duration_seconds=2, project_id=None)

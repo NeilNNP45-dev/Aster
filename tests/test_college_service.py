@@ -9,6 +9,11 @@ class TestCollegeService(unittest.TestCase):
         self.db = DatabaseConnection(db_path=":memory:")
         self.service = CollegeService(db_conn=self.db)
 
+    def tearDown(self):
+        if hasattr(self, "db") and self.db is not None:
+            self.db.close()
+
+
     def test_course_crud_and_attendance_summary(self):
         course = self.service.create_course(
             name="Algorithms",

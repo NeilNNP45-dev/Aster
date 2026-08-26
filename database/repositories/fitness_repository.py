@@ -11,6 +11,17 @@ class FitnessRepository:
     def __init__(self, db_conn: Optional[DatabaseConnection] = None):
         self.db = db_conn or DatabaseConnection()
 
+    def close(self):
+        if hasattr(self, "db") and self.db is not None:
+            self.db.close()
+
+    def __del__(self):
+        try:
+            self.close()
+        except Exception:
+            pass
+
+
     def add_workout(self, workout: WorkoutEntry) -> WorkoutEntry:
         query = """
             INSERT INTO fitness_workouts (title, workout_type, duration_minutes, calories, notes, performed_at)

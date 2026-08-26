@@ -14,6 +14,11 @@ class TestCodingServices(unittest.TestCase):
         self.project_service = ProjectService(repo=self.repo)
         self.goals_service = GoalsService(repo=self.repo)
 
+    def tearDown(self):
+        if hasattr(self, "conn") and self.conn is not None:
+            self.conn.close()
+
+
     def test_project_time_total(self):
         proj = CodingProject(name="P1")
         proj = self.project_service.add_project(proj)

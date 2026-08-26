@@ -9,6 +9,17 @@ class CodingRepository:
     def __init__(self, db_conn: Optional[DatabaseConnection] = None):
         self.db = db_conn or DatabaseConnection()
 
+    def close(self):
+        if hasattr(self, "db") and self.db is not None:
+            self.db.close()
+
+    def __del__(self):
+        try:
+            self.close()
+        except Exception:
+            pass
+
+
     # ---------- Projects ----------
     def add_project(self, project: CodingProject) -> CodingProject:
         query = """

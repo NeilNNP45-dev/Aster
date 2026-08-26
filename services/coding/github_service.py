@@ -38,6 +38,8 @@ class GitHubService:
             return value
         return None
 
+    MAX_RESPONSE_SIZE = 1024 * 1024  # 1 MB maximum response limit
+
     def fetch_repo_metadata(self, full_name: str, token: Optional[str] = None) -> Optional[dict]:
         normalized = self._normalize_full_name(full_name)
         if not normalized:
@@ -50,9 +52,28 @@ class GitHubService:
         req = Request(url, headers=headers)
         try:
             with urlopen(req, timeout=10) as resp:
-                data = resp.read()
-                return json.loads(data.decode("utf-8"))
-        except (HTTPError, URLError, Exception):
+                content_type = resp.headers.get("Content-Type", "").lower()
+                if "json" not in content_type:
+                    return None
+
+                chunks = []
+                bytes_read = 0
+                chunk_size = 8192
+                while True:
+                    chunk = resp.read(chunk_size)
+                    if not chunk:
+                        break
+                    bytes_read += len(chunk)
+                    if bytes_read > self.MAX_RESPONSE_SIZE:
+                        return None
+                    chunks.append(chunk)
+
+                data = b"".join(chunks)
+                parsed = json.loads(data.decode("utf-8"))
+                if isinstance(parsed, dict):
+                    return parsed
+                return None
+        except (HTTPError, URLError, json.JSONDecodeError, UnicodeDecodeError, TimeoutError, OSError, ValueError):
             return None
 
     def sync_project_metadata(self, project_id: int, full_name: str, token: Optional[str] = None) -> bool:

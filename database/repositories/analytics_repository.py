@@ -14,6 +14,17 @@ class AnalyticsRepository:
     def __init__(self, db_conn: Optional[DatabaseConnection] = None):
         self.db = db_conn or DatabaseConnection()
 
+    def close(self):
+        if hasattr(self, "db") and self.db is not None:
+            self.db.close()
+
+    def __del__(self):
+        try:
+            self.close()
+        except Exception:
+            pass
+
+
     @staticmethod
     def get_week_bounds(dt: Optional[datetime] = None) -> Tuple[str, str]:
         """Return ISO week bounds (Monday to Sunday) for the given date in YYYY-MM-DD format."""

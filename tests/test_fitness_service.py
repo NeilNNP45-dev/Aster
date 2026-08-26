@@ -9,6 +9,11 @@ class TestFitnessService(unittest.TestCase):
         self.conn = DatabaseConnection(db_path=":memory:")
         self.service = FitnessService(db_conn=self.conn)
 
+    def tearDown(self):
+        if hasattr(self, "conn") and self.conn is not None:
+            self.conn.close()
+
+
     def test_log_workout_and_weight(self):
         workout = self.service.log_workout("Morning Run", workout_type="Cardio", duration_minutes=30, calories=250)
         self.assertIsNotNone(workout.id)

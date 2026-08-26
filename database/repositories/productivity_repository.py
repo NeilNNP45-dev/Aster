@@ -9,6 +9,17 @@ class ProductivityRepository:
     def __init__(self, db_conn: Optional[DatabaseConnection] = None):
         self.db = db_conn or DatabaseConnection()
 
+    def close(self):
+        if hasattr(self, "db") and self.db is not None:
+            self.db.close()
+
+    def __del__(self):
+        try:
+            self.close()
+        except Exception:
+            pass
+
+
     # ==================== TASKS (To-Do List) ====================
 
     def add_task(self, task: Task) -> Task:

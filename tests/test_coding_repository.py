@@ -11,6 +11,11 @@ class TestCodingRepository(unittest.TestCase):
         self.conn = DatabaseConnection(db_path=":memory:")
         self.repo = CodingRepository(db_conn=self.conn)
 
+    def tearDown(self):
+        if hasattr(self, "conn") and self.conn is not None:
+            self.conn.close()
+
+
     def test_project_and_session_and_goal_crud(self):
         # Create project
         proj = CodingProject(name="Test Project", repo_path="/tmp/p", language="Python")
