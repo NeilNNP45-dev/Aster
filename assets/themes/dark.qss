@@ -466,4 +466,70 @@ QFrame[class="trend-row"]:hover {
     background-color: #23232C;
 }
 
+/* --- Home & Settings Dashboard Enhancement Styles --- */
+QFrame[class="metric-card"] {
+    background-color: #1E1E24;
+    border: 1px solid #2D2D38;
+    border-radius: 12px;
+    padding: 16px;
+}
+QFrame[class="metric-card"]:hover {
+    border-color: #3D3D50;
+    background-color: #22222B;
+}
+
+QLabel[class="metric-number"] {
+    font-size: 26px;
+    font-weight: 700;
+    color: #F9FAFB;
+}
+
+QLabel[class="metric-label"] {
+    font-size: 13px;
+    font-weight: 500;
+    color: #9CA3AF;
+}
+
+QPushButton[class="action-shortcut-btn"] {
+    background-color: #1E1E24;
+    color: #E5E7EB;
+    border: 1px solid #2D2D38;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: left;
+}
+QPushButton[class="action-shortcut-btn"]:hover {
+    background-color: #2A2A36;
+    border-color: #7C3AED;
+    color: #FFFFFF;
+}
+
+QFrame[class="setting-card"] {
+    background-color: #1E1E24;
+    border: 1px solid #2D2D38;
+    border-radius: 12px;
+    padding: 18px;
+}
+
+QLabel[class="setting-key"] {
+    font-size: 13px;
+    font-weight: 600;
+    color: #9CA3AF;
+}
+
+QLabel[class="setting-val"] {
+    font-size: 13px;
+    font-weight: 500;
+    color: #F3F4F6;
+}
+
+QLabel[class="setting-val-highlight"] {
+    font-size: 13px;
+    font-weight: 600;
+    color: #C4B5FD;
+}
+
+
 

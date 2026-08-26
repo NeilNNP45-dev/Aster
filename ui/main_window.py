@@ -45,14 +45,17 @@ class MainWindow(QMainWindow):
         self.stacked_widget.setObjectName("ContentArea")
         main_layout.addWidget(self.stacked_widget, 1)
 
+        def navigate_to(index: int):
+            self._switch_page(index)
+
         # Instantiate & register domain pages
-        self.home_page = HomePage()
+        self.home_page = HomePage(on_navigate=navigate_to)
         self.productivity_page = ProductivityPage()
         self.college_page = CollegePage()
         self.coding_page = CodingPage()
         self.fitness_page = FitnessPage()
         self.analytics_page = AnalyticsPage()
-        self.settings_page = SettingsPage()
+        self.settings_page = SettingsPage(on_navigate=navigate_to)
 
         self.stacked_widget.addWidget(self.home_page)         # Index 0
         self.stacked_widget.addWidget(self.productivity_page) # Index 1
@@ -68,6 +71,8 @@ class MainWindow(QMainWindow):
     def _switch_page(self, index: int):
         if 0 <= index < self.stacked_widget.count():
             self.stacked_widget.setCurrentIndex(index)
+            self.sidebar.set_active_index(index)
+
 
     def _center_window(self):
         screen = self.screen()

@@ -154,6 +154,14 @@ class CodingRepository:
         return goal
 
     def get_goals_by_project(self, project_id: Optional[int] = None) -> List[CodingGoal]:
+        reset_query = """
+            UPDATE coding_goals
+            SET is_completed = 0
+            WHERE reset_daily = 1
+              AND is_completed = 1
+              AND last_completed_at IS NOT NULL
+              AND date(last_completed_at) < date('now', 'localtime')
+        """
         query = "SELECT * FROM coding_goals"
         params: tuple = ()
         if project_id is not None:
@@ -163,6 +171,7 @@ class CodingRepository:
 
         goals: List[CodingGoal] = []
         with self.db.get_cursor() as cursor:
+            cursor.execute(reset_query)
             cursor.execute(query, params)
             for row in cursor.fetchall():
                 goals.append(
@@ -178,6 +187,7 @@ class CodingRepository:
                     )
                 )
         return goals
+
 
     def toggle_goal_completion(self, goal_id: int) -> bool:
         query = """

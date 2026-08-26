@@ -157,10 +157,19 @@ class ProductivityRepository:
         return goal
 
     def get_daily_goals(self) -> List[DailyGoal]:
-        """Retrieve all daily goals."""
+        """Retrieve all daily goals, automatically resetting stale daily goals."""
+        reset_query = """
+            UPDATE daily_goals
+            SET is_completed = 0
+            WHERE reset_daily = 1
+              AND is_completed = 1
+              AND last_completed_at IS NOT NULL
+              AND date(last_completed_at) < date('now', 'localtime')
+        """
         query = "SELECT * FROM daily_goals ORDER BY id ASC"
         goals = []
         with self.db.get_cursor() as cursor:
+            cursor.execute(reset_query)
             cursor.execute(query)
             for row in cursor.fetchall():
                 goals.append(
@@ -175,6 +184,7 @@ class ProductivityRepository:
                     )
                 )
         return goals
+
 
     def toggle_goal_completion(self, goal_id: int) -> bool:
         """Toggle goal completion and update streak."""

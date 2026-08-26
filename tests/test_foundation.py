@@ -19,9 +19,14 @@ class TestFoundation(unittest.TestCase):
                     page._db.close()
                 if hasattr(page, "_repo") and page._repo is not None:
                     page._repo.close()
+                if hasattr(page, "_home_service") and page._home_service is not None:
+                    page._home_service.close()
+                if hasattr(page, "_settings_service") and page._settings_service is not None:
+                    page._settings_service.close()
             self.window.close()
             self.window.deleteLater()
             self.window = None
+
 
 
     def test_window_properties(self):
