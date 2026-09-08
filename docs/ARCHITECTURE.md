@@ -1103,3 +1103,116 @@ Key features introduced in Version 0.6:
 4. **Preparation for Luna AI (Version 0.7):**
    - The `ReportSummary` dataclass and `generate_report()` method produce structured data objects specifically designed to be consumed by Luna AI in Version 0.7 for generating personalized insights and recommendations.
 
+---
+
+# Theme System Architecture
+
+## Theme System Overview
+
+Aster now supports application-wide theme selection and user-created color palettes. Themes are applied at the `QApplication` level so all pages, reusable widgets, and dialogs share the same appearance without each page owning separate styling logic.
+
+The available theme modes are:
+
+- **Sunlit Candy:** the default bright, warm theme with cream surfaces, coral actions, pink highlights, mint success states, sky accents, and yellow details.
+- **Midnight Candy:** a dark charcoal/navy theme that preserves the same colorful identity without relying on the earlier purple-heavy palette.
+- **Custom Palette:** a user-editable palette generated from semantic color roles.
+
+## Theme-Related Components
+
+### `ui/theme_manager.py`
+
+`ThemeManager` is the application-level coordinator for themes. It:
+
+- Defines the supported theme identifiers: `sunlit`, `midnight`, and `custom`.
+- Loads the saved theme before `MainWindow` is created.
+- Applies QSS to the shared `QApplication` instance.
+- Emits `theme_changed` when a theme or custom palette is applied.
+- Persists the active theme with Qt `QSettings`.
+- Stores and restores the custom palette as JSON in `QSettings`.
+- Renders `assets/themes/custom.qss` by replacing semantic palette placeholders with user-selected colors.
+
+`ThemeManager` deliberately uses `QSettings` rather than the SQLite database. Appearance preferences are application configuration, not domain data, and should remain available independently of the productivity database.
+
+### `ui/theme_palette.py`
+
+This module defines the semantic palette model. The shared roles are:
+
+```text
+background, sidebar, surface, surface_alt, border,
+primary, secondary, success, warning, danger,
+text, muted_text, selection
+```
+
+It also contains the built-in Sunlit and Midnight palette definitions. Widgets refer to these semantic roles through generated QSS rather than knowing which individual color values are used by a theme.
+
+### `ui/pages/theme/page.py`
+
+`ThemePage` is a dedicated top-level page in the main navigation. It contains:
+
+- A preset selector for Sunlit Candy, Midnight Candy, and Custom Palette.
+- A scrollable custom palette editor.
+- Native Qt color-picker buttons for each palette role.
+- A reset action that restores the custom palette to Sunlit Candy.
+- A small preview area for primary actions, secondary actions, and success states.
+
+The page applies palette changes immediately through `ThemeManager`, so users do not need to restart Aster or rebuild the page stack.
+
+### `ui/pages/settings/page.py`
+
+Settings no longer contains the full color editor. It keeps a compact Appearance summary showing the active theme and provides a link to open Theme Studio. This keeps Settings focused on application information, privacy, storage, and integrations.
+
+### `ui/main_window.py` and `ui/widgets/sidebar.py`
+
+The main window now registers eight pages. Theme is index `6`, and Settings is index `7`. The sidebar exposes both pages as separate navigation items. `MainWindow` passes the shared `ThemeManager` to `ThemePage` and `SettingsPage`.
+
+## Stylesheet Layering
+
+Qt QSS does not provide the same variable system as modern CSS. Aster therefore uses a layered stylesheet approach:
+
+1. `assets/themes/dark.qss` is loaded as the existing Sunlit-compatible base stylesheet.
+2. `assets/themes/midnight.qss` is appended for Midnight-specific overrides.
+3. `assets/themes/custom.qss` is appended after placeholder replacement for Custom Palette mode.
+
+Later rules override earlier rules, allowing the existing visual vocabulary and widget selectors to remain stable while themes change colors globally.
+
+## Runtime Theme Flow
+
+```text
+Application startup
+        |
+        v
+ThemeManager reads QSettings
+        |
+        v
+Load Sunlit / Midnight / Custom QSS
+        |
+        v
+Create MainWindow and Theme Studio
+        |
+        v
+User changes a preset or color
+        |
+        v
+ThemeManager applies stylesheet, persists preference,
+and emits theme_changed to synchronize visible controls
+```
+
+## Persistence Rules
+
+Theme state is stored under the Aster Qt settings namespace:
+
+```text
+appearance/theme
+appearance/custom_palette
+```
+
+The custom palette is stored as JSON. If the saved value is missing or invalid, Aster falls back to the Sunlit palette. Theme changes never modify the SQLite schema or user activity records.
+
+## Theme Design Constraints
+
+- Theme changes must not alter page behavior or business logic.
+- All pages and dialogs should use semantic QSS classes where possible.
+- Custom colors should be applied through the palette model rather than hard-coded in individual widgets.
+- The Theme page should remain scrollable as more customization controls are added.
+- Built-in palettes must remain available as safe reset points.
+

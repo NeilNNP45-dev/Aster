@@ -1,0 +1,226 @@
+/* Generated override for Aster custom palettes. */
+
+QMainWindow, QDialog, QWidget,
+#ContentArea, QStackedWidget,
+#ProductivityPage, #CollegePage, #CodingPage, #FitnessPage,
+#AnalyticsPage, #SettingsPage, #HomePage,
+#TasksWidget, #GoalsWidget, #NotesWidget, #PomodoroWidget,
+#CoursesWidget, #TimetableWidget, #AttendanceWidget,
+#AssignmentsWidget, #ExamsWidget,
+.page-container, QWidget[class="note-editor-panel"] {
+    background-color: {{background}};
+    color: {{text}};
+}
+
+#SidebarWidget {
+    background-color: {{sidebar}};
+    border-right-color: {{border}};
+}
+
+#SidebarLogo, .page-header,
+QLabel[class="pomodoro-timer"], QLabel[class="stat-number"],
+QLabel[class="metric-number"] {
+    color: {{text}};
+}
+
+#SidebarLogoSpan,
+QLabel[class="pomodoro-state-label"],
+QLabel[class="report-header"],
+QLabel[class="setting-val-highlight"] {
+    color: {{primary}};
+}
+
+QPushButton.nav-btn {
+    color: {{muted_text}};
+}
+
+QPushButton.nav-btn:hover {
+    background-color: {{surface_alt}};
+    color: {{text}};
+}
+
+QPushButton.nav-btn:checked,
+QPushButton.nav-btn.active {
+    background-color: {{selection}};
+    color: {{primary}};
+    border-left-color: {{primary}};
+}
+
+.page-subtitle, .card-description,
+QLabel[class="metric-label"], QLabel[class="stat-label"],
+QLabel[class="setting-key"], QLabel[class="report-text"],
+QLabel[class="task-due"], QLabel[class="log-entry"] {
+    color: {{muted_text}};
+}
+
+.card, QFrame[class="metric-card"], QFrame[class="stat-card"],
+QFrame[class="task-item"], QFrame[class="trend-row"],
+QFrame[class="setting-card"], QFrame[class="report-card"] {
+    background-color: {{surface}};
+    border-color: {{border}};
+}
+
+.card:hover, QFrame[class="metric-card"]:hover,
+QFrame[class="task-item"]:hover, QFrame[class="trend-row"]:hover {
+    background-color: {{surface_alt}};
+    border-color: {{primary}};
+}
+
+.card-title, QLabel[class="task-title"],
+QLabel[class="report-subheader"] {
+    color: {{text}};
+    background-color: transparent;
+}
+
+.status-badge, QPushButton[class="pill-tab"]:checked,
+QListWidget[class="note-list"]::item:selected {
+    background-color: {{selection}};
+    color: {{text}};
+    border-color: {{primary}};
+}
+
+QPushButton[class="pill-tab"] {
+    color: {{muted_text}};
+    border-color: {{border}};
+}
+
+QPushButton[class="pill-tab"]:hover,
+QPushButton[class="secondary-btn"]:hover,
+QPushButton[class="action-shortcut-btn"]:hover {
+    background-color: {{surface_alt}};
+    color: {{text}};
+}
+
+QPushButton[class="primary-btn"] {
+    background-color: {{primary}};
+    color: {{background}};
+}
+
+QPushButton[class="primary-btn"]:hover {
+    background-color: {{secondary}};
+}
+
+QPushButton[class="primary-btn"]:pressed {
+    background-color: {{danger}};
+}
+
+QPushButton[class="secondary-btn"],
+QPushButton[class="action-shortcut-btn"],
+QDialogButtonBox QPushButton {
+    background-color: {{surface_alt}};
+    color: {{text}};
+    border-color: {{border}};
+}
+
+QPushButton[class="danger-btn"] {
+    color: {{danger}};
+    border-color: {{danger}};
+}
+
+QPushButton[class="danger-btn"]:hover,
+QPushButton[class="task-delete-btn"]:hover {
+    color: {{text}};
+    background-color: {{selection}};
+}
+
+QPushButton[class="task-check-btn"] {
+    border-color: {{success}};
+}
+
+QPushButton[class="task-check-btn"]:hover,
+QPushButton[class="task-check-btn completed"] {
+    background-color: {{success}};
+    border-color: {{success}};
+    color: {{background}};
+}
+
+QLineEdit[class="form-input"], QTextEdit[class="form-input"],
+QLineEdit[class="search-input"], QSpinBox, QDoubleSpinBox,
+QTimeEdit, QDateEdit, QDateTimeEdit,
+QSpinBox[class="form-spinbox"], QDoubleSpinBox[class="form-spinbox"],
+QComboBox, QComboBox[class="form-combo"] {
+    background-color: {{surface}};
+    border-color: {{border}};
+    color: {{text}};
+    selection-background-color: {{selection}};
+    selection-color: {{text}};
+}
+
+QLineEdit, QTextEdit, QPlainTextEdit,
+QLineEdit[class="note-title-input"], QTextEdit[class="note-body-editor"] {
+    selection-background-color: {{selection}};
+    selection-color: {{text}};
+}
+
+QLineEdit[class="form-input"]:focus,
+QTextEdit[class="form-input"]:focus,
+QLineEdit[class="search-input"]:focus,
+QSpinBox:focus, QDoubleSpinBox:focus, QTimeEdit:focus,
+QDateEdit:focus, QDateTimeEdit:focus,
+QComboBox:focus, QComboBox[class="form-combo"]:focus {
+    border-color: {{primary}};
+}
+
+QComboBox QAbstractItemView,
+QComboBox[class="form-combo"] QAbstractItemView {
+    background-color: {{surface}};
+    border-color: {{border}};
+    color: {{text}};
+    selection-background-color: {{selection}};
+    selection-color: {{text}};
+}
+
+QComboBox::down-arrow, QComboBox[class="form-combo"]::down-arrow {
+    border-top-color: {{primary}};
+}
+
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow,
+QTimeEdit::up-arrow, QDateEdit::up-arrow, QDateTimeEdit::up-arrow {
+    border-bottom-color: {{primary}};
+}
+
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow,
+QTimeEdit::down-arrow, QDateEdit::down-arrow, QDateTimeEdit::down-arrow {
+    border-top-color: {{primary}};
+}
+
+QCheckBox { color: {{text}}; }
+QCheckBox::indicator { border-color: {{border}}; background-color: {{surface}}; }
+QCheckBox::indicator:checked { background-color: {{success}}; border-color: {{success}}; }
+
+QFrame[class="pomodoro-card"] {
+    background-color: {{surface_alt}};
+    border-color: {{border}};
+}
+
+QLabel[class="stat-badge-up"] {
+    color: {{success}};
+    background-color: {{surface_alt}};
+}
+
+QLabel[class="stat-badge-down"] {
+    color: {{danger}};
+    background-color: {{selection}};
+}
+
+QProgressBar[class="habit-progress"], QProgressBar[class="trend-progress"] {
+    background-color: {{surface_alt}};
+    border-color: {{border}};
+}
+
+QProgressBar[class="habit-progress"]::chunk,
+QProgressBar[class="trend-progress"]::chunk {
+    background: {{primary}};
+}
+
+QListWidget[class="note-list"] {
+    background-color: {{surface}};
+    border-right-color: {{border}};
+}
+
+QListWidget[class="note-list"]::item { color: {{text}}; }
+QListWidget[class="note-list"]::item:hover:!selected { background-color: {{surface_alt}}; }
+
+QScrollBar:vertical, QScrollBar:horizontal { background: {{background}}; }
+QScrollBar::handle:vertical, QScrollBar::handle:horizontal { background: {{border}}; }
+QScrollBar::handle:vertical:hover, QScrollBar::handle:horizontal:hover { background: {{primary}}; }

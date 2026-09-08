@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QStackedWidget
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QStackedWidget
 
 from ui.widgets.sidebar import SidebarWidget
 from ui.pages.home.page import HomePage
@@ -8,7 +8,9 @@ from ui.pages.college.page import CollegePage
 from ui.pages.coding.page import CodingPage
 from ui.pages.fitness.page import FitnessPage
 from ui.pages.analytics.page import AnalyticsPage
+from ui.pages.theme.page import ThemePage
 from ui.pages.settings.page import SettingsPage
+from ui.theme_manager import ThemeManager
 
 
 class MainWindow(QMainWindow):
@@ -19,8 +21,9 @@ class MainWindow(QMainWindow):
     MIN_WIDTH = 900
     MIN_HEIGHT = 650
 
-    def __init__(self):
+    def __init__(self, theme_manager: ThemeManager = None):
         super().__init__()
+        self.theme_manager = theme_manager or ThemeManager(QApplication.instance(), self)
         self.setWindowTitle("Aster")
         self.resize(self.DEFAULT_WIDTH, self.DEFAULT_HEIGHT)
         self.setMinimumSize(self.MIN_WIDTH, self.MIN_HEIGHT)
@@ -55,7 +58,8 @@ class MainWindow(QMainWindow):
         self.coding_page = CodingPage()
         self.fitness_page = FitnessPage()
         self.analytics_page = AnalyticsPage()
-        self.settings_page = SettingsPage(on_navigate=navigate_to)
+        self.theme_page = ThemePage(theme_manager=self.theme_manager)
+        self.settings_page = SettingsPage(on_navigate=navigate_to, theme_manager=self.theme_manager)
 
         self.stacked_widget.addWidget(self.home_page)         # Index 0
         self.stacked_widget.addWidget(self.productivity_page) # Index 1
@@ -63,7 +67,8 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.coding_page)       # Index 3
         self.stacked_widget.addWidget(self.fitness_page)      # Index 4
         self.stacked_widget.addWidget(self.analytics_page)    # Index 5
-        self.stacked_widget.addWidget(self.settings_page)     # Index 6
+        self.stacked_widget.addWidget(self.theme_page)        # Index 6
+        self.stacked_widget.addWidget(self.settings_page)     # Index 7
 
         # Connect sidebar navigation signal
         self.sidebar.page_changed.connect(self._switch_page)

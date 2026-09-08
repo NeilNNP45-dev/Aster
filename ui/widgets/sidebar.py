@@ -20,21 +20,22 @@ class SidebarWidget(QWidget):
         ("💻  Coding", 3),
         ("💪  Fitness", 4),
         ("📊  Analytics", 5),
-        ("⚙️  Settings", 6),
+        ("🎨  Theme", 6),
+        ("⚙️  Settings", 7),
     ]
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setObjectName("SidebarWidget")
-        self.setFixedWidth(220)
+        self.setFixedWidth(210)
         self._button_group = QButtonGroup(self)
         self._button_group.setExclusive(True)
         self._init_ui()
 
     def _init_ui(self):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(16, 20, 16, 20)
-        layout.setSpacing(8)
+        layout.setContentsMargins(14, 20, 14, 20)
+        layout.setSpacing(6)
 
         # Brand Header
         logo = QLabel("🌼 Aster")

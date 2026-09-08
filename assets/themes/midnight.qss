@@ -1,0 +1,288 @@
+/* Aster Midnight Candy Theme
+   Dark charcoal/navy surfaces with coral, mint, sky, and yellow accents. */
+
+QMainWindow, QDialog, QWidget,
+#ContentArea, QStackedWidget,
+#ProductivityPage, #CollegePage, #CodingPage, #FitnessPage,
+#AnalyticsPage, #SettingsPage, #HomePage,
+#TasksWidget, #GoalsWidget, #NotesWidget, #PomodoroWidget,
+#CoursesWidget, #TimetableWidget, #AttendanceWidget,
+#AssignmentsWidget, #ExamsWidget,
+.page-container, QWidget[class="note-editor-panel"] {
+    background-color: #171A22;
+    color: #F9F5F2;
+}
+
+#SidebarWidget {
+    background-color: #202532;
+    border-right-color: #384155;
+}
+
+#SidebarLogo, .page-header,
+QLabel[class="pomodoro-timer"],
+QLabel[class="stat-number"],
+QLabel[class="metric-number"] {
+    color: #F9F5F2;
+}
+
+#SidebarLogoSpan {
+    color: #FF806F;
+}
+
+QPushButton.nav-btn {
+    color: #B7BAC8;
+}
+
+QPushButton.nav-btn:hover {
+    background-color: #2B3343;
+    color: #F9F5F2;
+}
+
+QPushButton.nav-btn:checked,
+QPushButton.nav-btn.active {
+    background-color: #3A2D3A;
+    color: #FFD2DC;
+    border-left-color: #FF806F;
+}
+
+.page-subtitle,
+.card-description,
+QLabel[class="metric-label"],
+QLabel[class="stat-label"],
+QLabel[class="setting-key"],
+QLabel[class="report-text"] {
+    color: #B7BAC8;
+}
+
+.card,
+QFrame[class="metric-card"],
+QFrame[class="stat-card"],
+QFrame[class="task-item"],
+QFrame[class="trend-row"],
+QFrame[class="setting-card"],
+QFrame[class="report-card"] {
+    background-color: #1D222C;
+    border-color: #2F3849;
+}
+
+.card:hover,
+QFrame[class="metric-card"]:hover,
+QFrame[class="task-item"]:hover,
+QFrame[class="trend-row"]:hover {
+    background-color: #232A36;
+    border-color: #4A566D;
+}
+
+QLabel[class="card-title"],
+QLabel[class="page-header"],
+QLabel[class="page-subtitle"],
+QLabel[class="report-header"],
+QLabel[class="report-subheader"] {
+    background-color: transparent;
+}
+
+.card-title,
+QLabel[class="task-title"],
+QLabel[class="report-subheader"] {
+    color: #F5E8E5;
+}
+
+.status-badge {
+    background-color: #514122;
+    color: #FFE39A;
+    border-color: #80662D;
+}
+
+QPushButton[class="pill-tab"] {
+    color: #B7BAC8;
+    border-color: #485269;
+}
+
+QPushButton[class="pill-tab"]:hover,
+QPushButton[class="secondary-btn"]:hover,
+QPushButton[class="action-shortcut-btn"]:hover {
+    background-color: #30394B;
+    color: #F9F5F2;
+}
+
+QPushButton[class="pill-tab"]:checked,
+QListWidget[class="note-list"]::item:selected {
+    background-color: #3A2D3A;
+    color: #FFD2DC;
+    border-color: #B85E70;
+}
+
+QPushButton[class="primary-btn"] {
+    background-color: #FF806F;
+    color: #271B20;
+}
+
+QPushButton[class="primary-btn"]:hover {
+    background-color: #FF9B7A;
+}
+
+QPushButton[class="primary-btn"]:pressed {
+    background-color: #D9665D;
+}
+
+QPushButton[class="secondary-btn"],
+QPushButton[class="action-shortcut-btn"],
+QDialogButtonBox QPushButton {
+    background-color: #30394B;
+    color: #F5E8E5;
+    border-color: #536078;
+}
+
+QPushButton[class="danger-btn"] {
+    color: #FF9CA7;
+    border-color: #71404A;
+}
+
+QPushButton[class="danger-btn"]:hover,
+QPushButton[class="task-delete-btn"]:hover {
+    color: #FFE8EA;
+    background-color: #512D37;
+}
+
+QPushButton[class="task-check-btn"] {
+    border-color: #628B7A;
+}
+
+QPushButton[class="task-check-btn"]:hover,
+QPushButton[class="task-check-btn completed"] {
+    background-color: #87D5AE;
+    border-color: #87D5AE;
+    color: #1B382A;
+}
+
+QLabel[class="task-due"],
+QLabel[class="log-entry"] {
+    color: #9299AB;
+}
+
+QLineEdit[class="form-input"],
+QTextEdit[class="form-input"],
+QLineEdit[class="search-input"],
+QSpinBox, QDoubleSpinBox, QTimeEdit, QDateEdit, QDateTimeEdit,
+QSpinBox[class="form-spinbox"], QDoubleSpinBox[class="form-spinbox"],
+QComboBox, QComboBox[class="form-combo"] {
+    background-color: #202532;
+    border-color: #455168;
+    color: #F9F5F2;
+    selection-background-color: #754653;
+}
+
+/* Keep text selection subtle and warm instead of using Qt's cool
+   blue-gray default highlight in dark mode. */
+QLineEdit, QTextEdit, QPlainTextEdit,
+QLineEdit[class="note-title-input"],
+QTextEdit[class="note-body-editor"] {
+    selection-background-color: #4A3038;
+    selection-color: #FFF8F0;
+}
+
+QLineEdit[class="form-input"]:focus,
+QTextEdit[class="form-input"]:focus,
+QLineEdit[class="search-input"]:focus,
+QSpinBox:focus, QDoubleSpinBox:focus, QTimeEdit:focus,
+QDateEdit:focus, QDateTimeEdit:focus,
+QComboBox:focus, QComboBox[class="form-combo"]:focus {
+    border-color: #FF9B7A;
+}
+
+QComboBox QAbstractItemView,
+QComboBox[class="form-combo"] QAbstractItemView {
+    background-color: #202532;
+    border-color: #536078;
+    color: #F9F5F2;
+    selection-background-color: #754653;
+}
+
+QComboBox::down-arrow,
+QComboBox[class="form-combo"]::down-arrow {
+    border-top-color: #FF806F;
+}
+
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow,
+QTimeEdit::up-arrow, QDateEdit::up-arrow,
+QDateTimeEdit::up-arrow {
+    border-bottom-color: #FF806F;
+}
+
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow,
+QTimeEdit::down-arrow, QDateEdit::down-arrow,
+QDateTimeEdit::down-arrow {
+    border-top-color: #FF806F;
+}
+
+QCheckBox {
+    color: #E9DDE0;
+}
+
+QCheckBox::indicator {
+    border-color: #628B7A;
+    background-color: #202532;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #87D5AE;
+    border-color: #87D5AE;
+}
+
+QFrame[class="pomodoro-card"] {
+    background-color: #202532;
+    border-color: #536078;
+}
+
+QLabel[class="pomodoro-state-label"],
+QLabel[class="report-header"],
+QLabel[class="setting-val-highlight"] {
+    color: #FFD2DC;
+}
+
+QLabel[class="stat-badge-up"] {
+    color: #B9F1D2;
+    background-color: #214A39;
+}
+
+QLabel[class="stat-badge-down"] {
+    color: #FFD0D5;
+    background-color: #5B303A;
+}
+
+QProgressBar[class="habit-progress"],
+QProgressBar[class="trend-progress"] {
+    background-color: #202532;
+    border-color: #384155;
+}
+
+QProgressBar[class="habit-progress"]::chunk,
+QProgressBar[class="trend-progress"]::chunk {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #FF806F, stop:0.5 #F39AB9, stop:1 #86C9F5);
+}
+
+QListWidget[class="note-list"] {
+    background-color: #202532;
+    border-right-color: #384155;
+}
+
+QListWidget[class="note-list"]::item {
+    color: #E9DDE0;
+}
+
+QListWidget[class="note-list"]::item:hover:!selected {
+    background-color: #2B3343;
+}
+
+QScrollBar:vertical, QScrollBar:horizontal {
+    background: #171A22;
+}
+
+QScrollBar::handle:vertical, QScrollBar::handle:horizontal {
+    background: #536078;
+}
+
+QScrollBar::handle:vertical:hover, QScrollBar::handle:horizontal:hover {
+    background: #74839E;
+}

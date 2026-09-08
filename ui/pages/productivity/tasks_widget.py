@@ -49,7 +49,7 @@ class TaskItemWidget(QFrame):
         title_lbl = QLabel(self.task.title)
         title_lbl.setProperty("class", "task-title")
         if self.task.is_completed:
-            title_lbl.setStyleSheet("text-decoration: line-through; color: #6B7280;")
+            title_lbl.setStyleSheet("text-decoration: line-through; color: #A48591;")
         title_lbl.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
         # Due date (if any)

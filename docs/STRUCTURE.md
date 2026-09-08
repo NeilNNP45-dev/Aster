@@ -128,3 +128,58 @@ Contains project documentation, architecture decisions, coding standards, roadma
 * Prioritize readability and maintainability over clever implementations.
 
 This document is expected to evolve alongside Aster as the project grows.
+
+---
+
+# Current UI and Theme Structure
+
+The application currently exposes eight top-level pages through the sidebar:
+
+1. Home
+2. Productivity
+3. College
+4. Coding
+5. Fitness
+6. Analytics
+7. Theme
+8. Settings
+
+The Theme page is intentionally separate from Settings. Settings contains application information, storage diagnostics, privacy details, and integration information. Theme contains preset selection, custom palette editing, color pickers, reset controls, and a live visual preview.
+
+## Current Theme-Related Files
+
+| Path | Responsibility |
+|---|---|
+| `ui/theme_manager.py` | Loads, applies, switches, and persists the active application theme. |
+| `ui/theme_palette.py` | Defines semantic palette roles and the built-in Sunlit and Midnight palettes. |
+| `ui/pages/theme/page.py` | Theme Studio page with preset selection, color controls, reset behavior, and preview controls. |
+| `assets/themes/dark.qss` | Existing Sunlit Candy base stylesheet retained for compatibility. |
+| `assets/themes/midnight.qss` | Midnight Candy dark-mode QSS override stylesheet. |
+| `assets/themes/custom.qss` | Placeholder-based QSS template rendered from a user palette. |
+
+Theme preferences are stored through Qt `QSettings`, not SQLite. This keeps appearance configuration independent from user productivity data and allows the selected theme to be loaded before the main window is created.
+
+## Relevant Current Tree
+
+```text
+ui/
+├── main_window.py
+├── theme_manager.py
+├── theme_palette.py
+├── pages/
+│   ├── home/
+│   ├── productivity/
+│   ├── college/
+│   ├── coding/
+│   ├── fitness/
+│   ├── analytics/
+│   ├── theme/
+│   │   └── page.py
+│   └── settings/
+└── widgets/
+
+assets/themes/
+├── dark.qss
+├── midnight.qss
+└── custom.qss
+```

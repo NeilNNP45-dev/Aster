@@ -65,7 +65,7 @@ class HomeHabitItem(QFrame):
         title_lbl = QLabel(title)
         title_lbl.setProperty("class", "task-title")
         if is_completed:
-            title_lbl.setStyleSheet("text-decoration: line-through; color: #6B7280;")
+            title_lbl.setStyleSheet("text-decoration: line-through; color: #A48591;")
 
         streak_lbl = QLabel(f"🔥 {streak}")
         streak_lbl.setProperty("class", "task-due")
