@@ -37,7 +37,7 @@ class TestDailyGoalsReset(unittest.TestCase):
         self.assertEqual(fetched[0].last_completed_at, today_str)
 
     def test_previous_day_reset(self):
-        """Verify daily goals completed yesterday are reset to is_completed=False, preserving streak and timestamp."""
+        """Verify yesterday's completion resets for today but can continue the streak."""
         yesterday_str = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S")
         goal = DailyGoal(
             title="Workout 30m",
@@ -55,7 +55,7 @@ class TestDailyGoalsReset(unittest.TestCase):
         self.assertEqual(fetched[0].last_completed_at, yesterday_str)
 
     def test_multiple_day_shutdown_reset(self):
-        """Verify daily goals completed 5 days ago reset to is_completed=False upon launch/fetch."""
+        """Verify reopening after several missed days resets the stale streak."""
         past_str = (datetime.now() - timedelta(days=5)).strftime("%Y-%m-%d %H:%M:%S")
         goal = DailyGoal(
             title="Drink Water",
@@ -69,8 +69,38 @@ class TestDailyGoalsReset(unittest.TestCase):
         fetched = self.prod_repo.get_daily_goals()
         self.assertEqual(len(fetched), 1)
         self.assertFalse(fetched[0].is_completed)
-        self.assertEqual(fetched[0].streak_count, 3)
+        self.assertEqual(fetched[0].streak_count, 0)
         self.assertEqual(fetched[0].last_completed_at, past_str)
+
+    def test_consecutive_days_continue_streak(self):
+        yesterday_str = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S")
+        goal = DailyGoal(title="Read", streak_count=4, last_completed_at=yesterday_str)
+        self.prod_repo.add_daily_goal(goal)
+
+        fetched = self.prod_repo.get_daily_goals()
+        self.assertFalse(fetched[0].is_completed)
+        self.prod_repo.toggle_goal_completion(fetched[0].id)
+        self.assertEqual(self.prod_repo.get_daily_goals()[0].streak_count, 5)
+
+    def test_missing_one_day_does_not_increment_old_streak(self):
+        two_days_ago = (datetime.now() - timedelta(days=2)).strftime("%Y-%m-%d %H:%M:%S")
+        goal = DailyGoal(title="Exercise", streak_count=8, last_completed_at=two_days_ago)
+        self.prod_repo.add_daily_goal(goal)
+
+        fetched = self.prod_repo.get_daily_goals()
+        self.assertEqual(fetched[0].streak_count, 0)
+        self.prod_repo.toggle_goal_completion(fetched[0].id)
+        self.assertEqual(self.prod_repo.get_daily_goals()[0].streak_count, 1)
+
+    def test_unchecking_today_resets_completion_without_advancing_streak(self):
+        goal = DailyGoal(title="Water", streak_count=2)
+        self.prod_repo.add_daily_goal(goal)
+        self.prod_repo.toggle_goal_completion(goal.id)
+        self.assertTrue(self.prod_repo.get_daily_goals()[0].is_completed)
+        self.prod_repo.toggle_goal_completion(goal.id)
+        fetched = self.prod_repo.get_daily_goals()[0]
+        self.assertFalse(fetched.is_completed)
+        self.assertEqual(fetched.streak_count, 2)
 
     def test_non_resetting_goals_remain_completed(self):
         """Verify goals with reset_daily=False remain completed even across day boundaries."""

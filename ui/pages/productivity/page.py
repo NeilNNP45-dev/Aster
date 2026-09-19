@@ -43,7 +43,7 @@ class ProductivityPage(QWidget):
         # ── Page header ──────────────────────────────────────────────────────
         title = QLabel("Productivity")
         title.setProperty("class", "page-header")
-        subtitle = QLabel("Manage your tasks, habits, notes, and focus sessions")
+        subtitle = QLabel("Manage one-time tasks, repeatable daily goals, notes, and focus sessions")
         subtitle.setProperty("class", "page-subtitle")
         layout.addWidget(title)
         layout.addWidget(subtitle)

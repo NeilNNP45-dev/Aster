@@ -74,6 +74,14 @@ class GoalsWidget(QWidget):
         header_row.addWidget(self.add_btn)
         layout.addLayout(header_row)
 
+        explanation = QLabel(
+            "Daily Goals are repeatable behaviors or habits—for example, “Drink water”, "
+            "“Code for 60 minutes”, or “Read 20 pages”."
+        )
+        explanation.setProperty("class", "card-description")
+        explanation.setWordWrap(True)
+        layout.addWidget(explanation)
+
         # Progress bar
         self._progress_bar = QProgressBar()
         self._progress_bar.setFixedHeight(8)
@@ -107,7 +115,7 @@ class GoalsWidget(QWidget):
         self._progress_bar.setValue(completed)
 
         if not goals:
-            empty = QLabel("No habits yet. Click '＋ Add Goal' to create one.")
+            empty = QLabel("No daily goals yet. Add a repeatable behavior, not a one-time task.")
             empty.setProperty("class", "card-description")
             empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self._goals_layout.insertWidget(0, empty)

@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (
 
 from services.productivity.pomodoro_service import PomodoroService, PomodoroState
 from database.repositories.productivity_repository import ProductivityRepository
+from ui.dialogs.pomodoro_settings_dialog import PomodoroSettingsDialog
 
 
 def _fmt_time(seconds: int) -> str:
@@ -36,22 +37,33 @@ class PomodoroWidget(QWidget):
         timer_card = QFrame()
         timer_card.setProperty("class", "card pomodoro-card")
         card_layout = QVBoxLayout(timer_card)
-        card_layout.setContentsMargins(40, 32, 40, 32)
-        card_layout.setSpacing(12)
+        card_layout.setContentsMargins(32, 28, 32, 28)
+        card_layout.setSpacing(16)
         card_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        timer_card.setMinimumHeight(430)
+
+        # Header: current state on the left, settings on the right.
+        header_row = QHBoxLayout()
+        header_row.setSpacing(12)
+        self.settings_btn = QPushButton("⚙  Timer Settings")
+        self.settings_btn.setProperty("class", "secondary-btn pomodoro-settings-btn")
+        self.settings_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        self.settings_btn.clicked.connect(self._open_settings)
 
         # State label (Work / Short Break / Long Break)
         self._state_lbl = QLabel("Ready to focus?")
         self._state_lbl.setProperty("class", "pomodoro-state-label")
-        self._state_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._state_lbl.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        self._state_lbl.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
-        # Countdown display
-        self._timer_lbl = QLabel("25:00")
-        self._timer_lbl.setProperty("class", "pomodoro-timer")
-        self._timer_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        header_row.addWidget(self._state_lbl)
+        header_row.addWidget(self.settings_btn)
 
         # Session mode selector
+        self._mode_frame = QFrame()
+        self._mode_frame.setProperty("class", "pomodoro-mode-selector")
         mode_row = QHBoxLayout()
+        mode_row.setContentsMargins(4, 4, 4, 4)
         mode_row.setSpacing(8)
         mode_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._mode_btns: dict[str, QPushButton] = {}
@@ -67,16 +79,32 @@ class PomodoroWidget(QWidget):
             self._mode_btns[state] = btn
             mode_row.addWidget(btn)
         self._mode_btns[PomodoroState.WORK].setChecked(True)
+        self._mode_frame.setLayout(mode_row)
 
-        # Control buttons
-        ctrl_row = QHBoxLayout()
-        ctrl_row.setSpacing(12)
-        ctrl_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # Countdown display. Keeping the timer in its own frame prevents the
+        # mode selector and large glyphs from sharing the same visual space.
+        self._timer_display = QFrame()
+        self._timer_display.setProperty("class", "pomodoro-display")
+        self._timer_display.setMinimumHeight(142)
+        self._timer_display.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        timer_display_layout = QVBoxLayout(self._timer_display)
+        timer_display_layout.setContentsMargins(16, 6, 16, 6)
+        self._timer_lbl = QLabel("25:00")
+        self._timer_lbl.setProperty("class", "pomodoro-timer")
+        self._timer_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._timer_lbl.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        timer_display_layout.addWidget(self._timer_lbl)
 
+        # Primary control is intentionally separated from secondary actions.
         self.play_btn = QPushButton("▶  Start")
         self.play_btn.setProperty("class", "primary-btn pomodoro-play-btn")
+        self.play_btn.setMinimumWidth(190)
+        self.play_btn.setMinimumHeight(44)
         self.play_btn.clicked.connect(self._toggle_play_pause)
 
+        secondary_row = QHBoxLayout()
+        secondary_row.setSpacing(10)
+        secondary_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.skip_btn = QPushButton("⏭  Skip")
         self.skip_btn.setProperty("class", "secondary-btn")
         self.skip_btn.clicked.connect(self._service.skip)
@@ -85,21 +113,19 @@ class PomodoroWidget(QWidget):
         self.reset_btn.setProperty("class", "secondary-btn")
         self.reset_btn.clicked.connect(self._on_reset)
 
-        ctrl_row.addWidget(self.play_btn)
-        ctrl_row.addWidget(self.skip_btn)
-        ctrl_row.addWidget(self.reset_btn)
+        secondary_row.addWidget(self.skip_btn)
+        secondary_row.addWidget(self.reset_btn)
 
         # Sessions completed indicator
         self._sessions_lbl = QLabel("Sessions completed today: 0")
         self._sessions_lbl.setProperty("class", "card-description")
         self._sessions_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        card_layout.addWidget(self._state_lbl)
-        card_layout.addWidget(self._timer_lbl)
-        card_layout.addLayout(mode_row)
-        card_layout.addSpacing(8)
-        card_layout.addLayout(ctrl_row)
-        card_layout.addSpacing(8)
+        card_layout.addLayout(header_row)
+        card_layout.addWidget(self._mode_frame)
+        card_layout.addWidget(self._timer_display)
+        card_layout.addWidget(self.play_btn, 0, Qt.AlignmentFlag.AlignCenter)
+        card_layout.addLayout(secondary_row)
         card_layout.addWidget(self._sessions_lbl)
 
         layout.addWidget(timer_card)
@@ -146,6 +172,11 @@ class PomodoroWidget(QWidget):
     def _on_reset(self):
         self._service.reset()
         self._refresh_buttons()
+
+    def _open_settings(self):
+        dialog = PomodoroSettingsDialog(self._service.durations, self)
+        if dialog.exec() == PomodoroSettingsDialog.DialogCode.Accepted:
+            self._service.configure_durations(*dialog.get_values())
 
     def _on_tick(self, seconds: int = None, from_service: bool = True):
         if seconds is None:

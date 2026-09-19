@@ -1216,3 +1216,52 @@ The custom palette is stored as JSON. If the saved value is missing or invalid, 
 - The Theme page should remain scrollable as more customization controls are added.
 - Built-in palettes must remain available as safe reset points.
 
+---
+
+# 2026-09-19 - Home and Productivity Reliability Update
+
+This update focused only on the Home and Productivity areas. Existing College, Coding, Fitness, Analytics, Theme Studio, Settings, and Astra work were left outside the feature changes.
+
+## Home Dashboard
+
+- Removed the Home Quick Actions card and its navigation buttons for adding tasks, starting focus sessions, logging coding time, and logging workouts.
+- Preserved the Home greeting/date header, summary metrics, daily-goal preview, and Recent Updates card.
+- Changed the Daily Goals preview to an adaptive card instead of a vertically stretched panel.
+- Added a compact completion summary and progress bar based on the existing `HomeSummary` values.
+- Added a bounded internal scroll area so larger goal lists do not stretch the entire Home page.
+- Preserved goal completion toggles, streak display, empty-state guidance, and existing Home service data flow.
+
+## Pomodoro Configuration and Layout
+
+- Added `PomodoroDurations` and `PomodoroSettings` support in the Productivity timer service.
+- Persisted focus, short-break, and long-break durations through Qt `QSettings` rather than SQLite.
+- Added `PomodoroSettingsDialog` with positive whole-minute validation and clear next-session behavior.
+- Ensured changing settings does not alter an active or paused session. New durations are used by the next session, while reset and completion logging continue to use the active session duration.
+- Preserved Start, Pause, Resume, Reset, Skip, Work, Short Break, Long Break, and session-history behavior.
+- Corrected Pomodoro state-name emission so UI state labels receive the active state name.
+- Reworked the Pomodoro card into a focused canvas with separated header, mode selector, timer display panel, primary control, secondary controls, and session count.
+- Added explicit sizing and spacing to prevent timer glyphs and mode controls from overlapping.
+- Added Pomodoro-specific display and control styling while retaining the existing theme layering.
+
+## Tasks, Daily Goals, and Streaks
+
+- Kept Tasks and Daily Goals as separate database models and workflows.
+- Clarified the distinction in Productivity subtitles, explanatory text, dialogs, and empty states:
+  - Tasks represent finite outcomes such as `Submit assignment` or `Finish Chapter 3`.
+  - Daily Goals represent repeatable behaviors such as `Drink water`, `Code for 60 minutes`, or `Read 20 pages`.
+- Changed daily-goal streak handling to use calendar dates rather than only the in-memory completion state.
+- Consecutive required days continue a streak.
+- A missed day resets the streak to zero when goals are refreshed or Aster is reopened.
+- Completing a goal after a missed day starts a new streak at one.
+- Existing daily completion reset behavior remains intact, including same-day preservation and non-resetting goals.
+- No schema migration or database model merge was introduced.
+
+## Tests and Verification
+
+- Added regression coverage for consecutive daily-goal completion, missed days, multi-day reopening, daily completion reset, and avoiding incorrect streak increments.
+- Added Pomodoro service coverage for persisted durations and active-session protection.
+- Added Qt smoke coverage for Pomodoro geometry/control separation and the adaptive Home daily-goal card.
+- Python compilation and non-Qt Home, database, and streak tests passed in the development environment.
+- Qt-based tests could not execute in that environment because PySide6 was not installed; those tests remain available for execution in the project's configured Qt environment.
+- No user data, unrelated files, SQLite schema, or existing unrelated work was reset or removed.
+

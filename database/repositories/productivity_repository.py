@@ -157,12 +157,15 @@ class ProductivityRepository:
         return goal
 
     def get_daily_goals(self) -> List[DailyGoal]:
-        """Retrieve all daily goals, automatically resetting stale daily goals."""
+        """Retrieve goals and reset completion/streak state after a missed day."""
         reset_query = """
             UPDATE daily_goals
-            SET is_completed = 0
+            SET is_completed = 0,
+                streak_count = CASE
+                    WHEN date(last_completed_at) < date('now', 'localtime', '-1 day') THEN 0
+                    ELSE streak_count
+                END
             WHERE reset_daily = 1
-              AND is_completed = 1
               AND last_completed_at IS NOT NULL
               AND date(last_completed_at) < date('now', 'localtime')
         """
@@ -187,11 +190,19 @@ class ProductivityRepository:
 
 
     def toggle_goal_completion(self, goal_id: int) -> bool:
-        """Toggle goal completion and update streak."""
+        """Toggle today's completion and update the streak using calendar dates."""
         query = """
             UPDATE daily_goals
             SET is_completed = CASE WHEN is_completed = 1 THEN 0 ELSE 1 END,
-                streak_count = CASE WHEN is_completed = 0 THEN streak_count + 1 ELSE max(0, streak_count - 1) END,
+                streak_count = CASE
+                    WHEN is_completed = 0 THEN CASE
+                        WHEN last_completed_at IS NULL THEN streak_count + 1
+                        WHEN date(last_completed_at) = date('now', 'localtime') THEN streak_count
+                        WHEN date(last_completed_at) = date('now', 'localtime', '-1 day') THEN streak_count + 1
+                        ELSE 1
+                    END
+                    ELSE max(0, streak_count - 1)
+                END,
                 last_completed_at = CASE WHEN is_completed = 0 THEN datetime('now', 'localtime') ELSE last_completed_at END
             WHERE id = ?
         """

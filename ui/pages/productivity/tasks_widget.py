@@ -109,6 +109,13 @@ class TasksWidget(QWidget):
         filter_row.addWidget(self.add_btn)
         layout.addLayout(filter_row)
 
+        explanation = QLabel(
+            "Tasks are finite, one-time outcomes—for example, “Submit assignment” or “Finish Chapter 3”."
+        )
+        explanation.setProperty("class", "card-description")
+        explanation.setWordWrap(True)
+        layout.addWidget(explanation)
+
         # Task scroll list
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
@@ -144,7 +151,9 @@ class TasksWidget(QWidget):
             tasks = [t for t in tasks if t.is_completed]
 
         if not tasks:
-            empty_lbl = QLabel("No tasks to show. Click '＋ Add Task' to get started.")
+            empty_lbl = QLabel(
+                "No tasks to show. Add a one-time outcome, such as “Submit assignment” or “Finish Chapter 3”."
+            )
             empty_lbl.setProperty("class", "card-description")
             empty_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self._list_layout.insertWidget(0, empty_lbl)

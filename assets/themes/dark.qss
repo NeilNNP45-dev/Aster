@@ -423,9 +423,12 @@ QLineEdit[class="search-input"]:focus { border-color: #7C3AED; }
 
 /* --- Pomodoro --- */
 QFrame[class="pomodoro-card"] { background-color: #1A1A20; border: 1px solid #2D2D38; border-radius: 20px; }
+QFrame[class="pomodoro-display"] { background-color: #121214; border: 1px solid #2D2D38; border-radius: 16px; }
+QFrame[class="pomodoro-mode-selector"] { background-color: transparent; }
 QLabel[class="pomodoro-timer"] { font-size: 72px; font-weight: 700; color: #F9FAFB; letter-spacing: 4px; }
 QLabel[class="pomodoro-state-label"] { font-size: 16px; font-weight: 600; color: #A78BFA; letter-spacing: 1px; }
 QPushButton[class="primary-btn pomodoro-play-btn"] { font-size: 15px; padding: 10px 32px; border-radius: 24px; }
+QPushButton[class="secondary-btn pomodoro-settings-btn"] { padding: 6px 12px; font-size: 12px; }
 
 QLabel[class="log-entry"] { font-size: 12px; color: #6B7280; padding: 4px 0px; border-bottom: 1px solid #1E1E24; }
 
@@ -763,6 +766,11 @@ QFrame[class="pomodoro-card"] {
     border-color: #665071;
 }
 
+QFrame[class="pomodoro-display"] {
+    background-color: #211B26;
+    border-color: #51405A;
+}
+
 QLabel[class="pomodoro-timer"],
 QLabel[class="stat-number"],
 QLabel[class="metric-number"] {
@@ -1031,6 +1039,11 @@ QCheckBox::indicator:checked {
 QFrame[class="pomodoro-card"] {
     background-color: #FFF0D6;
     border-color: #F0C56A;
+}
+
+QFrame[class="pomodoro-display"] {
+    background-color: #FFF8F0;
+    border-color: #E8CFC7;
 }
 
 QLabel[class="pomodoro-timer"],

@@ -3,8 +3,8 @@ from typing import Callable, Optional
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QFrame,
-    QPushButton, QScrollArea, QSizePolicy,
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame,
+    QPushButton, QScrollArea, QProgressBar, QSizePolicy,
 )
 
 from services.home.home_service import HomeService, HomeSummary
@@ -136,65 +136,55 @@ class HomePage(QWidget):
         body_layout = QHBoxLayout()
         body_layout.setSpacing(20)
 
-        # --- Left Column: Workflows & Habits ---
+        # --- Left Column: Today's daily goals ---
         left_col = QVBoxLayout()
         left_col.setSpacing(16)
 
-        # Quick Actions Card
-        actions_card = QFrame()
-        actions_card.setProperty("class", "card")
-        actions_layout = QVBoxLayout(actions_card)
-        actions_layout.setSpacing(12)
-
-        actions_title = QLabel("Quick Actions")
-        actions_title.setProperty("class", "card-title")
-        actions_layout.addWidget(actions_title)
-
-        shortcuts_grid = QGridLayout()
-        shortcuts_grid.setSpacing(10)
-
-        btn_add_task = QPushButton("✅  Add New Task")
-        btn_add_task.setProperty("class", "action-shortcut-btn")
-        btn_add_task.clicked.connect(lambda: self._trigger_navigate(1))
-
-        btn_focus = QPushButton("🍅  Start Focus Timer")
-        btn_focus.setProperty("class", "action-shortcut-btn")
-        btn_focus.clicked.connect(lambda: self._trigger_navigate(1))
-
-        btn_coding = QPushButton("💻  Log Coding Time")
-        btn_coding.setProperty("class", "action-shortcut-btn")
-        btn_coding.clicked.connect(lambda: self._trigger_navigate(3))
-
-        btn_workout = QPushButton("💪  Log Workout")
-        btn_workout.setProperty("class", "action-shortcut-btn")
-        btn_workout.clicked.connect(lambda: self._trigger_navigate(4))
-
-        shortcuts_grid.addWidget(btn_add_task, 0, 0)
-        shortcuts_grid.addWidget(btn_focus, 0, 1)
-        shortcuts_grid.addWidget(btn_coding, 1, 0)
-        shortcuts_grid.addWidget(btn_workout, 1, 1)
-        actions_layout.addLayout(shortcuts_grid)
-
-
-        left_col.addWidget(actions_card)
-
         # Habits Preview Card
-        habits_card = QFrame()
-        habits_card.setProperty("class", "card")
-        habits_layout = QVBoxLayout(habits_card)
+        self._habits_card = QFrame()
+        self._habits_card.setProperty("class", "card")
+        self._habits_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        habits_layout = QVBoxLayout(self._habits_card)
         habits_layout.setSpacing(10)
 
-        habits_title = QLabel("Today's Habits Checklist")
+        habits_header = QHBoxLayout()
+        habits_title = QLabel("Today's Daily Goals")
         habits_title.setProperty("class", "card-title")
-        habits_layout.addWidget(habits_title)
+        self._habits_progress_lbl = QLabel("0 / 0 complete")
+        self._habits_progress_lbl.setProperty("class", "card-description")
+        self._habits_progress_lbl.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        habits_header.addWidget(habits_title)
+        habits_header.addStretch()
+        habits_header.addWidget(self._habits_progress_lbl)
+        habits_layout.addLayout(habits_header)
+
+        self._habits_progress_bar = QProgressBar()
+        self._habits_progress_bar.setFixedHeight(8)
+        self._habits_progress_bar.setTextVisible(False)
+        self._habits_progress_bar.setProperty("class", "habit-progress")
+        habits_layout.addWidget(self._habits_progress_bar)
 
         self._habits_list_container = QWidget()
+        self._habits_list_container.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
+        )
         self._habits_list_layout = QVBoxLayout(self._habits_list_container)
         self._habits_list_layout.setContentsMargins(0, 0, 0, 0)
         self._habits_list_layout.setSpacing(6)
+        self._habits_list_layout.addStretch()
 
-        habits_layout.addWidget(self._habits_list_container)
-        left_col.addWidget(habits_card, 1)
+        self._habits_scroll = QScrollArea()
+        self._habits_scroll.setWidgetResizable(True)
+        self._habits_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        self._habits_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._habits_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self._habits_scroll.setMaximumHeight(220)
+        self._habits_scroll.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+        )
+        self._habits_scroll.setWidget(self._habits_list_container)
+        habits_layout.addWidget(self._habits_scroll)
+        left_col.addWidget(self._habits_card)
 
         body_layout.addLayout(left_col, 3)
 
@@ -243,17 +233,29 @@ class HomePage(QWidget):
         self._card_habits.update_value(f"{summary.completed_habits_count} / {summary.total_habits_count}")
         self._card_focus.update_value(f"{summary.today_focus_minutes} mins")
         self._card_projects.update_value(str(summary.active_projects_count))
+        self._habits_progress_lbl.setText(
+            f"{summary.completed_habits_count} / {summary.total_habits_count} complete"
+        )
+        self._habits_progress_bar.setMaximum(max(summary.total_habits_count, 1))
+        self._habits_progress_bar.setValue(summary.completed_habits_count)
+
+        # Let the preview grow with its content, but keep a long goal list
+        # from stretching the entire Home page.
+        goal_count = len(summary.today_habits)
+        preview_height = min(220, max(68, 52 * max(goal_count, 1)))
+        self._habits_scroll.setFixedHeight(preview_height)
 
         # Refresh habits preview
-        while self._habits_list_layout.count() > 0:
+        while self._habits_list_layout.count() > 1:
             child = self._habits_list_layout.takeAt(0)
             if child.widget():
                 child.widget().deleteLater()
 
         if not summary.today_habits:
-            empty_lbl = QLabel("No daily habits created yet. Go to Productivity to add one.")
+            empty_lbl = QLabel("No daily goals yet. Add repeatable habits in Productivity, such as drinking water or reading 20 pages.")
             empty_lbl.setProperty("class", "card-description")
-            self._habits_list_layout.addWidget(empty_lbl)
+            empty_lbl.setWordWrap(True)
+            self._habits_list_layout.insertWidget(self._habits_list_layout.count() - 1, empty_lbl)
         else:
             for habit in summary.today_habits:
                 item = HomeHabitItem(
@@ -263,7 +265,7 @@ class HomePage(QWidget):
                     streak=habit.streak_count,
                     on_toggle=self._on_habit_toggle,
                 )
-                self._habits_list_layout.addWidget(item)
+                self._habits_list_layout.insertWidget(self._habits_list_layout.count() - 1, item)
 
     def _on_habit_toggle(self, goal_id: int):
         self._home_service.toggle_habit_completion(goal_id)

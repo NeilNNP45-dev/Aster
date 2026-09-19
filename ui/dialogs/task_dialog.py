@@ -21,11 +21,18 @@ class TaskDialog(QDialog):
         layout = QVBoxLayout(self)
         layout.setSpacing(16)
 
+        description = QLabel(
+            "Create a finite, one-time outcome. Examples: “Submit assignment” or “Finish Chapter 3”."
+        )
+        description.setWordWrap(True)
+        description.setProperty("class", "card-description")
+        layout.addWidget(description)
+
         form = QFormLayout()
         form.setSpacing(10)
 
         self._title_input = QLineEdit()
-        self._title_input.setPlaceholderText("Task title…")
+        self._title_input.setPlaceholderText("e.g. Submit assignment")
         self._title_input.setProperty("class", "form-input")
 
         self._desc_input = QTextEdit()

@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (
-    QDialog, QVBoxLayout, QFormLayout,
+    QDialog, QVBoxLayout, QFormLayout, QLabel,
     QLineEdit, QCheckBox, QDialogButtonBox,
 )
 
@@ -33,6 +33,13 @@ class GoalDialog(QDialog):
     def _build(self):
         layout = QVBoxLayout(self)
         layout.setSpacing(16)
+
+        description = QLabel(
+            "Create a repeatable daily behavior. Examples: “Drink water”, “Code for 60 minutes”, or “Read 20 pages”."
+        )
+        description.setWordWrap(True)
+        description.setProperty("class", "card-description")
+        layout.addWidget(description)
 
         form = QFormLayout()
         form.setSpacing(10)

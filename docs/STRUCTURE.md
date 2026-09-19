@@ -159,6 +159,23 @@ The Theme page is intentionally separate from Settings. Settings contains applic
 
 Theme preferences are stored through Qt `QSettings`, not SQLite. This keeps appearance configuration independent from user productivity data and allows the selected theme to be loaded before the main window is created.
 
+## Current Home and Productivity Support Files
+
+The Home and Productivity areas use the existing UI, service, repository, and configuration boundaries:
+
+| Path | Responsibility |
+|---|---|
+| `ui/pages/home/page.py` | Home greeting, summary metrics, daily-goal preview, progress indicator, and recent updates. |
+| `ui/pages/productivity/page.py` | Productivity page shell and the four existing sub-tabs. |
+| `ui/pages/productivity/pomodoro_widget.py` | Pomodoro focused-canvas UI, controls, settings entry point, and session history display. |
+| `ui/dialogs/pomodoro_settings_dialog.py` | Dialog for validating and editing Pomodoro durations. |
+| `services/productivity/pomodoro_service.py` | Pomodoro state machine, configurable durations, active-session safety, and completion logging. |
+| `database/repositories/productivity_repository.py` | Persistence for tasks, daily goals, notes, and Pomodoro sessions, including date-based daily-goal streak handling. |
+| `tests/test_home_widget_layout.py` | Qt smoke coverage for the adaptive Home daily-goal card. |
+| `tests/test_pomodoro_widget_layout.py` | Qt smoke coverage for Pomodoro layout separation and control visibility. |
+
+Pomodoro duration preferences are stored with Qt `QSettings` under the Productivity configuration namespace. They are intentionally kept outside the SQLite productivity tables because they are local timer preferences rather than user activity records.
+
 ## Relevant Current Tree
 
 ```text
