@@ -110,7 +110,12 @@ class CoursesWidget(QWidget):
                 self.refresh()
 
     def _on_edit(self, course: Course):
-        pass
+        dialog = CourseDialog(self, course=course)
+        if dialog.exec() == dialog.DialogCode.Accepted:
+            updated_course = dialog.get_course()
+            if updated_course:
+                self._service.update_course(updated_course)
+                self.refresh()
 
     def _on_delete(self, course_id):
         if course_id is not None:

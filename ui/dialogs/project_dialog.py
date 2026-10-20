@@ -4,7 +4,7 @@ class ProjectDialog(QDialog):
     def __init__(self, project=None, parent=None):
         super().__init__(parent)
         self._project = project
-        self.setWindowTitle("New Coding Project")
+        self.setWindowTitle("Edit Coding Project" if project else "New Coding Project")
         self._build()
 
     def _build(self):
@@ -28,9 +28,25 @@ class ProjectDialog(QDialog):
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
 
+        if self._project:
+            self._name.setText(self._project.name or "")
+            self._repo_path.setText(self._project.repo_path or "")
+            self._github.setText(self._project.github_full_name or "")
+
     def get_project(self):
         if not self._name.text().strip():
             return None
         from database.models import CodingProject
 
-        return CodingProject(name=self._name.text().strip(), repo_path=self._repo_path.text().strip(), github_full_name=self._github.text().strip() or None)
+        return CodingProject(
+            id=self._project.id if self._project else None,
+            name=self._name.text().strip(),
+            repo_path=self._repo_path.text().strip(),
+            github_full_name=self._github.text().strip() or None,
+            github_html_url=self._project.github_html_url if self._project else None,
+            description=self._project.description if self._project else "",
+            language=self._project.language if self._project else "",
+            is_active=self._project.is_active if self._project else True,
+            created_at=self._project.created_at if self._project else None,
+            updated_at=self._project.updated_at if self._project else None,
+        )

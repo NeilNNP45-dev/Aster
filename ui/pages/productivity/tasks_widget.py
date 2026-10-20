@@ -13,6 +13,7 @@ class TaskItemWidget(QFrame):
 
     toggled = Signal(int)   # task_id
     deleted = Signal(int)   # task_id
+    edited = Signal(object)  # Task
 
     PRIORITY_COLORS = {
         "High": "#EF4444",
@@ -52,13 +53,12 @@ class TaskItemWidget(QFrame):
             title_lbl.setStyleSheet("text-decoration: line-through; color: #A48591;")
         title_lbl.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
-        # Due date (if any)
-        if self.task.due_date:
-            due_lbl = QLabel(f"📅 {self.task.due_date}")
-            due_lbl.setProperty("class", "task-due")
-            layout.addWidget(due_lbl)
+        # Action buttons
+        edit_btn = QPushButton("✎")
+        edit_btn.setFixedSize(22, 22)
+        edit_btn.setProperty("class", "task-delete-btn")
+        edit_btn.clicked.connect(lambda: self.edited.emit(self.task))
 
-        # Delete button
         del_btn = QPushButton("✕")
         del_btn.setFixedSize(22, 22)
         del_btn.setProperty("class", "task-delete-btn")
@@ -71,11 +71,13 @@ class TaskItemWidget(QFrame):
             due_lbl = QLabel(f"📅 {self.task.due_date}")
             due_lbl.setProperty("class", "task-due")
             layout.addWidget(due_lbl)
+        layout.addWidget(edit_btn)
         layout.addWidget(del_btn)
 
 
 class TasksWidget(QWidget):
     """Full Tasks sub-view with filter tabs, task list, and add button."""
+    edit_requested = Signal(object)  # Task
 
     def __init__(self, repo: ProductivityRepository, parent=None):
         super().__init__(parent)
@@ -163,6 +165,7 @@ class TasksWidget(QWidget):
             widget = TaskItemWidget(task)
             widget.toggled.connect(self._on_toggle)
             widget.deleted.connect(self._on_delete)
+            widget.edited.connect(self._on_edit)
             self._list_layout.insertWidget(self._list_layout.count() - 1, widget)
 
     def _on_toggle(self, task_id: int):
@@ -172,3 +175,6 @@ class TasksWidget(QWidget):
     def _on_delete(self, task_id: int):
         self._repo.delete_task(task_id)
         self.refresh()
+
+    def _on_edit(self, task: Task):
+        self.edit_requested.emit(task)

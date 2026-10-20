@@ -210,6 +210,30 @@ class ProductivityRepository:
             cursor.execute(query, (goal_id,))
             return cursor.rowcount > 0
 
+    def update_daily_goal(self, goal: DailyGoal) -> bool:
+        """Update an existing daily goal."""
+        if goal.id is None:
+            return False
+        query = """
+            UPDATE daily_goals
+            SET title = ?, category = ?, is_completed = ?, reset_daily = ?, streak_count = ?, last_completed_at = ?
+            WHERE id = ?
+        """
+        with self.db.get_cursor() as cursor:
+            cursor.execute(
+                query,
+                (
+                    goal.title,
+                    goal.category,
+                    1 if goal.is_completed else 0,
+                    1 if goal.reset_daily else 0,
+                    goal.streak_count,
+                    goal.last_completed_at,
+                    goal.id,
+                ),
+            )
+            return cursor.rowcount > 0
+
     def delete_daily_goal(self, goal_id: int) -> bool:
         """Delete a daily goal by ID."""
         query = "DELETE FROM daily_goals WHERE id = ?"

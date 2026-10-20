@@ -81,6 +81,15 @@ class TestDatabaseFoundation(unittest.TestCase):
         self.assertTrue(updated_goals[0].is_completed)
         self.assertEqual(updated_goals[0].streak_count, 4)
 
+        # Update
+        updated_goal = updated_goals[0]
+        updated_goal.title = "Drink 3L Water"
+        updated_goal.category = "Health"
+        self.assertTrue(self.repo.update_daily_goal(updated_goal))
+        refetched_goal = self.repo.get_daily_goals()[0]
+        self.assertEqual(refetched_goal.title, "Drink 3L Water")
+        self.assertEqual(refetched_goal.category, "Health")
+
         # Delete
         self.assertTrue(self.repo.delete_daily_goal(saved_goal.id))
         self.assertEqual(len(self.repo.get_daily_goals()), 0)
