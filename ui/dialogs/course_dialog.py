@@ -9,9 +9,10 @@ from database.models import Course
 class CourseDialog(QDialog):
     """Modal dialog for creating or editing a course."""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, course: Course | None = None):
         super().__init__(parent)
-        self.setWindowTitle("New Course")
+        self._course = course
+        self.setWindowTitle("Edit Course" if course else "New Course")
         self.setMinimumWidth(420)
         self.setModal(True)
         self._build()
@@ -59,14 +60,25 @@ class CourseDialog(QDialog):
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
 
+        if self._course:
+            self._name_input.setText(self._course.name or "")
+            self._code_input.setText(self._course.code or "")
+            self._instructor_input.setText(self._course.instructor_name or "")
+            self._credit_input.setValue(self._course.credit_hours)
+            self._desc_input.setPlainText(self._course.description or "")
+
     def get_course(self) -> Course | None:
         title = self._name_input.text().strip()
         if not title:
             return None
         return Course(
+            id=self._course.id if self._course else None,
             name=title,
             code=self._code_input.text().strip(),
             instructor_name=self._instructor_input.text().strip(),
             credit_hours=self._credit_input.value(),
             description=self._desc_input.toPlainText().strip(),
+            color_tag=self._course.color_tag if self._course else "#7C3AED",
+            is_active=self._course.is_active if self._course else True,
+            created_at=self._course.created_at if self._course else None,
         )

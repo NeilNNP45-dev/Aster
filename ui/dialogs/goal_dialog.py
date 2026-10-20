@@ -15,16 +15,19 @@ class GoalDialog(QDialog):
     def __init__(
         self,
         parent=None,
+        goal: DailyGoal | None = None,
         dialog_title: str = "New Daily Goal",
         title_placeholder: str = "e.g. Drink 2L of water",
         category_placeholder: str = "e.g. Health, Study, Fitness",
         reset_label: str = "Reset daily at midnight",
     ):
         super().__init__(parent)
-        self.setWindowTitle(dialog_title)
+        self._goal = goal
+        effective_title = dialog_title if goal is None else dialog_title.replace("New", "Edit", 1)
+        self.setWindowTitle(effective_title)
         self.setMinimumWidth(360)
         self.setModal(True)
-        self._dialog_title = dialog_title
+        self._dialog_title = effective_title
         self._title_placeholder = title_placeholder
         self._category_placeholder = category_placeholder
         self._reset_label = reset_label
@@ -67,13 +70,22 @@ class GoalDialog(QDialog):
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
 
+        if self._goal:
+            self._title_input.setText(self._goal.title or "")
+            self._category_input.setText(self._goal.category or "")
+            self._reset_check.setChecked(self._goal.reset_daily)
+
     def get_goal(self) -> DailyGoal | None:
         """Return a DailyGoal dataclass built from dialog input, or None if invalid."""
         title = self._title_input.text().strip()
         if not title:
             return None
         return DailyGoal(
+            id=self._goal.id if self._goal else None,
             title=title,
             category=self._category_input.text().strip() or "General",
+            is_completed=self._goal.is_completed if self._goal else False,
             reset_daily=self._reset_check.isChecked(),
+            streak_count=self._goal.streak_count if self._goal else 0,
+            last_completed_at=self._goal.last_completed_at if self._goal else None,
         )

@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QFrame, QScrollArea, QProgressBar, QSizePolicy,
@@ -11,11 +11,12 @@ from database.repositories.productivity_repository import ProductivityRepository
 class GoalItemWidget(QFrame):
     """A single daily goal row with a check toggle and delete."""
 
-    def __init__(self, goal: DailyGoal, on_toggle, on_delete, parent=None):
+    def __init__(self, goal: DailyGoal, on_toggle, on_edit, on_delete, parent=None):
         super().__init__(parent)
         self.goal = goal
         self.setProperty("class", "task-item")
         self._on_toggle = on_toggle
+        self._on_edit = on_edit
         self._on_delete = on_delete
         self._build()
 
@@ -38,6 +39,11 @@ class GoalItemWidget(QFrame):
         streak_lbl = QLabel(f"🔥 {self.goal.streak_count}")
         streak_lbl.setProperty("class", "task-due")
 
+        edit_btn = QPushButton("✎")
+        edit_btn.setFixedSize(22, 22)
+        edit_btn.setProperty("class", "task-delete-btn")
+        edit_btn.clicked.connect(lambda: self._on_edit(self.goal))
+
         del_btn = QPushButton("✕")
         del_btn.setFixedSize(22, 22)
         del_btn.setProperty("class", "task-delete-btn")
@@ -46,11 +52,13 @@ class GoalItemWidget(QFrame):
         layout.addWidget(check_btn)
         layout.addWidget(title_lbl)
         layout.addWidget(streak_lbl)
+        layout.addWidget(edit_btn)
         layout.addWidget(del_btn)
 
 
 class GoalsWidget(QWidget):
     """Daily Goals & Habits sub-view."""
+    edit_requested = Signal(object)  # DailyGoal
 
     def __init__(self, repo: ProductivityRepository, parent=None):
         super().__init__(parent)
@@ -122,7 +130,7 @@ class GoalsWidget(QWidget):
             return
 
         for goal in goals:
-            widget = GoalItemWidget(goal, self._on_toggle, self._on_delete)
+            widget = GoalItemWidget(goal, self._on_toggle, self._on_edit, self._on_delete)
             self._goals_layout.insertWidget(self._goals_layout.count() - 1, widget)
 
     def _on_toggle(self, goal_id: int):
@@ -132,3 +140,6 @@ class GoalsWidget(QWidget):
     def _on_delete(self, goal_id: int):
         self._repo.delete_daily_goal(goal_id)
         self.refresh()
+
+    def _on_edit(self, goal: DailyGoal):
+        self.edit_requested.emit(goal)

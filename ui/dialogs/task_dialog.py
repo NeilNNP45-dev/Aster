@@ -8,11 +8,12 @@ from database.models import Task
 
 
 class TaskDialog(QDialog):
-    """Modal dialog for creating a new task."""
+    """Modal dialog for creating or editing a task."""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, task: Task | None = None):
         super().__init__(parent)
-        self.setWindowTitle("New Task")
+        self._task = task
+        self.setWindowTitle("Edit Task" if task else "New Task")
         self.setMinimumWidth(400)
         self.setModal(True)
         self._build()
@@ -68,15 +69,26 @@ class TaskDialog(QDialog):
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
 
+        if self._task:
+            self._title_input.setText(self._task.title or "")
+            self._desc_input.setPlainText(self._task.description or "")
+            priority_index = self._priority_combo.findText(self._task.priority or "Medium")
+            self._priority_combo.setCurrentIndex(priority_index if priority_index >= 0 else 1)
+            self._category_input.setText(self._task.category or "")
+            self._due_date_input.setText(self._task.due_date or "")
+
     def get_task(self) -> Task | None:
         """Return a Task dataclass built from dialog input, or None if invalid."""
         title = self._title_input.text().strip()
         if not title:
             return None
         return Task(
+            id=self._task.id if self._task else None,
             title=title,
             description=self._desc_input.toPlainText().strip(),
             priority=self._priority_combo.currentText(),
             category=self._category_input.text().strip() or "General",
             due_date=self._due_date_input.text().strip() or None,
+            is_completed=self._task.is_completed if self._task else False,
+            created_at=self._task.created_at if self._task else None,
         )

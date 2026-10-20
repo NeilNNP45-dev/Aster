@@ -1,4 +1,5 @@
 from PySide6.QtCore import Signal
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QListWidget, QListWidgetItem
 
 from PySide6.QtWidgets import QDialog
@@ -22,10 +23,15 @@ class ProjectsWidget(QWidget):
         self._list = QListWidget()
         self._list.setProperty("class", "note-list")
         layout.addWidget(self._list)
+        self._list.itemDoubleClicked.connect(self._on_edit)
         add_btn = QPushButton("＋ Add Project")
         add_btn.setProperty("class", "primary-btn")
         add_btn.clicked.connect(self._on_add)
         layout.addWidget(add_btn)
+        edit_btn = QPushButton("✎ Edit Selected")
+        edit_btn.setProperty("class", "secondary-btn")
+        edit_btn.clicked.connect(self._on_edit)
+        layout.addWidget(edit_btn)
         self.refresh()
 
     def refresh(self):
@@ -33,7 +39,7 @@ class ProjectsWidget(QWidget):
         projects = self._project_service.list_projects()
         for p in projects:
             item = QListWidgetItem(f"{p.name} ({p.language})")
-            item.setData(1, p.id)
+            item.setData(Qt.ItemDataRole.UserRole, p)
             self._list.addItem(item)
 
     def _on_add(self):
@@ -46,5 +52,21 @@ class ProjectsWidget(QWidget):
 
                 cp = CodingProject(name=proj.name, repo_path=proj.repo_path, github_full_name=proj.github_full_name)
                 self._project_service.add_project(cp)
+                self.refresh()
+                self.project_added.emit()
+
+    def _on_edit(self, _item=None):
+        item = self._list.currentItem()
+        if item is None:
+            return
+        project = item.data(Qt.ItemDataRole.UserRole)
+        if project is None:
+            return
+
+        dlg = ProjectDialog(project=project, parent=self)
+        if dlg.exec() == QDialog.Accepted:
+            updated_project = dlg.get_project()
+            if updated_project:
+                self._project_service.update_project(updated_project)
                 self.refresh()
                 self.project_added.emit()

@@ -83,25 +83,33 @@ class ProductivityPage(QWidget):
         self._tab_group.idClicked.connect(self._stack.setCurrentIndex)
 
         # Connect "Add" buttons to their dialogs
-        self._tasks_view.add_btn.clicked.connect(self._open_task_dialog)
-        self._goals_view.add_btn.clicked.connect(self._open_goal_dialog)
+        self._tasks_view.add_btn.clicked.connect(lambda: self._open_task_dialog())
+        self._goals_view.add_btn.clicked.connect(lambda: self._open_goal_dialog())
+        self._tasks_view.edit_requested.connect(self._open_task_dialog)
+        self._goals_view.edit_requested.connect(self._open_goal_dialog)
 
         layout.addWidget(self._stack, 1)
 
     # ── Dialog handlers ──────────────────────────────────────────────────────
 
-    def _open_task_dialog(self):
-        dialog = TaskDialog(self)
+    def _open_task_dialog(self, task=None):
+        dialog = TaskDialog(self, task=task)
         if dialog.exec() == TaskDialog.DialogCode.Accepted:
-            task = dialog.get_task()
-            if task:
-                self._repo.add_task(task)
+            updated_task = dialog.get_task()
+            if updated_task:
+                if task is None:
+                    self._repo.add_task(updated_task)
+                else:
+                    self._repo.update_task(updated_task)
                 self._tasks_view.refresh()
 
-    def _open_goal_dialog(self):
-        dialog = GoalDialog(self)
+    def _open_goal_dialog(self, goal=None):
+        dialog = GoalDialog(self, goal=goal)
         if dialog.exec() == GoalDialog.DialogCode.Accepted:
-            goal = dialog.get_goal()
-            if goal:
-                self._repo.add_daily_goal(goal)
+            updated_goal = dialog.get_goal()
+            if updated_goal:
+                if goal is None:
+                    self._repo.add_daily_goal(updated_goal)
+                else:
+                    self._repo.update_daily_goal(updated_goal)
                 self._goals_view.refresh()
